@@ -26,7 +26,7 @@ public class WorkerService {
     }
 
     public List<Worker> findAllWorkers(){
-        return jdbcTemplate.query("SELECT * FROM application_user au LEFT JOIN application_user_address aua on au.address_id = aua.id LEFT JOIN user_contact_informations uci on au.contact_information_id = uci.id", (rs, rowNum) ->
+        return jdbcTemplate.query("SELECT * FROM application_user au LEFT JOIN application_user_address aua on au.address_id = aua.id LEFT JOIN user_contact_information uci on au.contact_information_id = uci.id", (rs, rowNum) ->
                 new Worker(
                         rs.getInt("au.id"),
                         rs.getString("au.name"),
@@ -43,7 +43,7 @@ public class WorkerService {
     }
 
     public List<Worker> getWorkerById(int id){
-        return jdbcTemplate.query(String.format("SELECT * FROM application_user au LEFT JOIN application_user_address aua on au.address_id = aua.id LEFT JOIN user_contact_informations uci on au.contact_information_id = uci.id WHERE id='%s'", id), (rs, rowNum) ->
+        return jdbcTemplate.query(String.format("SELECT * FROM application_user au LEFT JOIN application_user_address aua on au.address_id = aua.id LEFT JOIN user_contact_information uci on au.contact_information_id = uci.id WHERE au.id='%s'", id), (rs, rowNum) ->
                 new Worker(
                         rs.getInt("au.id"),
                         rs.getString("au.name"),

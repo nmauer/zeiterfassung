@@ -1,4 +1,4 @@
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 1,'Eula','Lane','eula.lane@jigrormo.ye','(762) 526-5961','1953-11-24','Insurance Clerk','Worker',false)
+insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) v alues (1, 1,'Eula','Lane','eula.lane@jigrormo.ye','(762) 526-5961','1953-11-24','Insurance Clerk','Worker',false)
 insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 2,'Barry','Rodriquez','barry.rodriquez@zun.mm','(267) 955-5124','2012-11-24','Mortarman','Manager',false)
 insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 3,'Eugenia','Selvi','eugenia.selvi@capfad.vn','(680) 368-2192','1972-11-09','Beer Coil Cleaner','External',false)
 insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 4,'Alejandro','Miles','alejandro.miles@dec.bn','(281) 301-2039','2012-12-27','Scale Attendant','Worker',false)
