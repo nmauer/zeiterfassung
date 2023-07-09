@@ -23,6 +23,8 @@ import de.nmauer.data.entity.Worker;
 import de.nmauer.data.service.WorkerService;
 import de.nmauer.security.AuthenticatedUser;
 import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.stream.Stream;
 
@@ -162,10 +164,9 @@ public class WorkerOverview extends VerticalLayout {
             Button showWorkingHoursBtn = new Button("Zur Stundenübersicht");
             Button editUserBtn = new Button("Mitarbeiter bearbeiten");
             Button deleteUserBtn = new Button("Mitarbeiter löschen");
+            Button resetPasswordBtn = new Button("Password zurücksetzten");
 
-            // todo password reset button
-
-            Stream.of(showWorkingHoursBtn, editUserBtn, deleteUserBtn).forEach(button -> {
+            Stream.of(showWorkingHoursBtn, editUserBtn, deleteUserBtn, resetPasswordBtn).forEach(button -> {
                 button.setVisible(true);
                 button.setEnabled(true);
 
@@ -218,6 +219,32 @@ public class WorkerOverview extends VerticalLayout {
                 dialog.setHeaderTitle("Mitarbeiter anlegen");
 
                 dialog.add(userDataLayout);
+                dialog.open();
+            });
+
+            resetPasswordBtn.addClickListener(buttonClickEvent -> {
+                Dialog dialog = new Dialog("Password zurücksetzten");
+
+                PasswordField passwordField = new PasswordField("Passwort");
+                PasswordField confirmPasswordField = new PasswordField("Passwort wiederholen");
+
+                Button confirmBtn = new Button("Password ändern");
+                Button cancelBtn = new Button("Abbrechen");
+
+                dialog.getFooter().add(cancelBtn, confirmBtn);
+                dialog.add(passwordField, confirmPasswordField);
+
+                confirmBtn.addClickListener(buttonClickEvent1 -> {
+                    if(!(passwordField.isEmpty() || confirmPasswordField.isEmpty()) && !passwordField.getValue().equals(confirmPasswordField.getValue())){
+                        Notification.show("Passwörter stimmen nicht überein");
+                        return;
+                    }
+                    worker.setHashedPassword(BCrypt.hashpw(passwordField.getValue(), BCrypt.gensalt(12)));
+                    workerService.updateWorker(worker);
+                });
+                cancelBtn.addClickListener(buttonClickEvent1 -> {
+                    dialog.close();
+                });
                 dialog.open();
             });
         });

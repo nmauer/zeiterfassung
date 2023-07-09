@@ -117,7 +117,7 @@ public class WorkerService {
         int contactId = jdbcTemplate.query(String.format("SELECT contact_information_id FROM application_user WHERE id='%s'", worker.getId()), (rs, rowNum) -> rs.getInt("contact_information_id")).get(0);
         jdbcTemplate.update(String.format("UPDATE user_contact_information SET phone_number='%s', mobile_number='%s', email='%s' WHERE id='%s'", worker.getPhoneNumber(), worker.getMobileNumber(), worker.getEmail(), contactId));
         //update address information
-        int addressId = jdbcTemplate.query(String.format("SELECT address_id FROM application_id WHERE id='%s'", worker.getId()), (rs, rowNum) -> rs.getInt("address_id")).get(0);
-        jdbcTemplate.update(String.format("UPDATE application_user_address SET street='%s', city='%s', zipcode='%' WHERE id='%s'", worker.getStreet(), worker.getCity(), worker.getZipcode(), addressId));
+        int addressId = jdbcTemplate.query(String.format("SELECT address_id FROM application_user WHERE id='%s'", worker.getId()), (rs, rowNum) -> rs.getInt("address_id")).get(0);
+        jdbcTemplate.update(String.format("UPDATE application_user_address SET street='%s', city='%s', zipcode='%s' WHERE id='%s'", worker.getStreet(), worker.getCity(), worker.getZipcode(), addressId));
     }
 }

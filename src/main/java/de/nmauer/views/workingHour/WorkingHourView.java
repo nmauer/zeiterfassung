@@ -77,7 +77,7 @@ public class WorkingHourView extends VerticalLayout {
 
     private ComponentRenderer<Span, WorkingHour> createWorkerNameRender() {
         return new ComponentRenderer<>(Span::new, (span, workingHour) -> {
-            span.setText(String.format("%s", workerService.getWorkerById((int) workingHour.getUser_id()).get(0).getName()));
+            span.setText(String.format("%s", workerService.getWorkerById((int) workingHour.getUser_id()).getName()));
         });
     }
 
@@ -184,7 +184,7 @@ public class WorkingHourView extends VerticalLayout {
 
         public boolean test(WorkingHour hour) {
 
-            boolean matchesFullName = matches(workerService.getWorkerById((int) hour.getUser_id()).get(0).getName(), fullName);
+            boolean matchesFullName = matches(workerService.getWorkerById((int) hour.getUser_id()).getName(), fullName);
             boolean matchesDay = matches(String.valueOf(hour.getDay()), day);
             boolean matchesYear = matches(String.valueOf(hour.getYear()), year);
             boolean matchesMonth = matches(String.valueOf(hour.getMonth()), month);
