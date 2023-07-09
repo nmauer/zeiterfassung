@@ -1,10 +1,9 @@
 @import url('./views/stempel-uhr-view.css');
-@import url('./views/time-clock.css');
-
+@import url('./views/worker-overview.css');
+@import url('./views/stempel-uhr-view.css');
 html {
       --lumo-border-radius-s: calc(var(--lumo-size-m) / 6);
       --lumo-border-radius-m: calc(var(--lumo-size-m) / 2);
       --lumo-border-radius-l: var(--lumo-size-m);
 
     }
-
