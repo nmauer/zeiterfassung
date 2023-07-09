@@ -4,15 +4,15 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.Uses;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.NativeLabel;
-import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.*;
 import de.nmauer.data.Role;
+import de.nmauer.data.entity.timeMapping.WorkingHour;
+import de.nmauer.data.service.WorkerService;
 import de.nmauer.data.service.timeTracking.TimeTrackingService;
 import de.nmauer.security.AuthenticatedUser;
 import jakarta.annotation.security.PermitAll;
@@ -36,7 +36,7 @@ public class TimeClockView extends VerticalLayout {
 
     public TimeClockView(AuthenticatedUser authenticatedUser, TimeTrackingService timeTrackingService) {
         if(authenticatedUser.get().get().getRoles().contains(Role.ADMIN)){
-            UI.getCurrent().getPage().setLocation("user_view");
+            UI.getCurrent().getPage().setLocation("worker-overview");
         }
         welcomeText = new NativeLabel();
         dateText = new NativeLabel();
@@ -126,6 +126,7 @@ public class TimeClockView extends VerticalLayout {
             add(loginBtn);
         }
     }
+
 
 
 }

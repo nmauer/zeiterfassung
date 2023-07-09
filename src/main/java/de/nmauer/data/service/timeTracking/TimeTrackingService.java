@@ -1,6 +1,5 @@
 package de.nmauer.data.service.timeTracking;
 
-import javassist.Loader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -36,7 +35,15 @@ public class TimeTrackingService {
         String year = new SimpleDateFormat("YYYY").format(loginTime);
         String month = new SimpleDateFormat("MM").format(loginTime);
         String day = new SimpleDateFormat("dd").format(loginTime);
-        int minutes = (int)  roundTime(System.currentTimeMillis() - loginTime.getTime()).getTimeInMillis()/60000;
+
+        int realMinutes = (int) (System.currentTimeMillis() - loginTime.getTime())/60000;
+        int minutes = (int) roundTime(System.currentTimeMillis() - loginTime.getTime()).getTimeInMillis()/60000;
+        if(realMinutes <= 0){
+            jdbcTemplate.update(String.format("DELETE FROM user_login WHERE user_id='%s'", id));
+            return;
+        }else if(realMinutes < 15){
+            minutes = (int) ((System.currentTimeMillis() - loginTime.getTime())/60000);
+        }
         jdbcTemplate.update(String.format("INSERT INTO working_hours (user_id, year, month, day, minutes) VALUES" +
                 " ('%s', '%s', '%s', '%s', '%s')", id, year, month, day, minutes));
 
