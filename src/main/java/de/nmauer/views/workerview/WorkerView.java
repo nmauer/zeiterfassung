@@ -6,13 +6,10 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.NativeLabel;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.BeforeEvent;
@@ -25,9 +22,15 @@ import de.nmauer.data.entity.timeMapping.WorkingMonth;
 import de.nmauer.data.service.WorkerService;
 import de.nmauer.data.service.timeTracking.WorkingHourService;
 import jakarta.annotation.security.RolesAllowed;
-import org.hibernate.jdbc.Work;
+import software.xdev.vaadin.grid_exporter.GridExporter;
+import software.xdev.vaadin.grid_exporter.format.Format;
+import software.xdev.vaadin.grid_exporter.jasper.format.CsvFormat;
+import software.xdev.vaadin.grid_exporter.jasper.format.PdfFormat;
+import software.xdev.vaadin.grid_exporter.jasper.format.XlsxFormat;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
 
@@ -36,6 +39,7 @@ import java.util.stream.Stream;
 public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUrlParameter<Integer> {
 
     private final WorkerService workerService;
+    private Board board;
     private final WorkingHourService workingHourService;
     private Worker worker;
     private Grid<WorkingMonth> grid;
@@ -54,6 +58,7 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
 
         grid = new Grid<>();
 
+
         Grid.Column<WorkingMonth> sort = grid.addColumn(WorkingMonth::getSorting);
         Grid.Column<WorkingMonth> monthAndYear = grid.addColumn(createMonthYearRenderer()).setHeader("Monat");
         Grid.Column<WorkingMonth> hours = grid.addColumn(WorkingMonth::getWorkingHoursSum).setHeader("Minuten");
@@ -66,6 +71,7 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
 
         GridSortOrder<WorkingMonth> order = new GridSortOrder<>(sort, SortDirection.DESCENDING);
         grid.sort(Arrays.asList(order));
+        grid.setDetailsVisibleOnClick(false);
 
         dataView = grid.setItems(workingHourService.getWorkingMonth(worker.getId()));
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
@@ -92,60 +98,85 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
 
     public ComponentRenderer<Div, WorkingMonth> createButtonRenderer(){
         return new ComponentRenderer<>(Div::new, (div, workingHour)->{
+            Grid<WorkingHour> monthGrid = new Grid<>();
+            Grid.Column<WorkingHour> date = monthGrid.addColumn(WorkingHour::getDay).setHeader("Datum");
+            Grid.Column<WorkingHour> start = monthGrid.addColumn(WorkingHour::getMonth).setHeader("Beginn");
+            Grid.Column<WorkingHour> end = monthGrid.addColumn(WorkingHour::getYear).setHeader("Ende");
+            Grid.Column<WorkingHour> minutes = monthGrid.addColumn(WorkingHour::getMinutes).setHeader("Minuten");
+            GridListDataView<WorkingHour> monthDataView = monthGrid.setItems(workingHourService.getWorkingHourByUserId(worker.getId()));
+
             HorizontalLayout btnLayout = new HorizontalLayout();
             Button showDetailsBtn = new Button("Details anzeigen");
+            showDetailsBtn.addClickListener(event -> {
+                grid.setDetailsVisible(workingHour,!grid.isDetailsVisible(workingHour));
+            });
             Button exportCSVBtn = new Button("Export als CSV");
+            exportCSVBtn.addClickListener(event -> {
+                export(monthGrid);
+            });
 
-            btnLayout.setJustifyContentMode(JustifyContentMode.END);
+            btnLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
             btnLayout.add(showDetailsBtn, exportCSVBtn);
 
             div.add(btnLayout);
         });
     }
 
-    public ComponentRenderer<VerticalLayout, WorkingMonth> createWorkerViewDetailRendererGrid() {
-        return new ComponentRenderer<>(VerticalLayout::new, (layout, workingMonth) -> {
+    public ComponentRenderer<Div, WorkingMonth> createWorkerViewDetailRendererGrid() {
+        return new ComponentRenderer<>(Div::new, (layout, workingMonth) -> {
+            createBoard();
+
             for(WorkingHour workingHour: workingMonth.getWorkingHours()){
-                HorizontalLayout horizontalLayout = new HorizontalLayout();
-                Board board = new Board();
-
-
-                NativeLabel day = new NativeLabel(workingHour.getDay() + "." + workingHour.getMonth() + "." + workingHour.getYear());
-                NativeLabel time = new NativeLabel(workingHour.getMinutes() + "");
-
-                horizontalLayout.add(day, time);
-                layout.add(horizontalLayout);
+                NativeLabel day = new NativeLabel();
+                NativeLabel time = new NativeLabel();
+                if(workingHour.getDay() <= 9){
+                    day.setText("0"+workingHour.getDay() + "." + workingHour.getMonth() + "." + workingHour.getYear());
+                }else if(workingHour.getMonth() <= 9){
+                    time.setText("0"+workingHour.getMinutes() + "");
+                }else{
+                    day.setText(workingHour.getDay() + "." + workingHour.getMonth() + "." + workingHour.getYear());
+                }
+                time.setText(workingHour.getMinutes() + "");
+                board.addRow(createCell(day.getText()), createCell(time.getText()), createCell("Beginn"), createCell("Ende"));
+                addClassName("board-view");
+                layout.add(board);
             }
         });
     }
+    public void createBoard(){
+        board = new Board();
+        board.addRow(createHeaderCell("Tag"),createHeaderCell("Minuten"), createHeaderCell("Beginn"), createHeaderCell("Ende"));
+    }
     public Div createCell(String text){
         Div div = new Div();
-        div.setText(text);
-        div.addClassNames("cell", "color");
-
+        VerticalLayout layout = new VerticalLayout();
+        NativeLabel label = new NativeLabel(text);
+        layout.add(label);
+        div.add(layout);
         return div;
     }
-    public class WorkerViewDetailRenderer extends Div{
-        public Grid<WorkingHour> grid;
-        public GridListDataView<WorkingHour> dataView;
+    public Div createHeaderCell(String text){
+        Div div = new Div();
+        VerticalLayout layout = new VerticalLayout();
+        H5 label = new H5(text);
+        layout.add(label);
+        div.add(layout);
+        return div;
+    }
 
-        public WorkerViewDetailRenderer(){
-            grid = new Grid<>();
-            Grid.Column<WorkingHour> day = grid.addColumn(WorkingHour::getDay).setHeader("Tag");
-            Grid.Column<WorkingHour> month = grid.addColumn(WorkingHour::getMonth).setHeader("Monat");
-            Grid.Column<WorkingHour> year = grid.addColumn(WorkingHour::getYear).setHeader("Jahr");
-            Grid.Column<WorkingHour> minutes = grid.addColumn(WorkingHour::getMinutes).setHeader("Minuten");
+    public void export(Grid<WorkingHour> monthGrid){
+        List<Format> formatList = new ArrayList<>();
+        CsvFormat csvFormat = new CsvFormat();
+        PdfFormat pdfFormat = new PdfFormat();
+        XlsxFormat xlsxFormat =  new XlsxFormat();
+        formatList.add(csvFormat);
+        formatList.add(pdfFormat);
+        formatList.add(xlsxFormat);
 
-            Stream.of(day, month, year, minutes).forEach(col -> col.setResizable(true));
-
-
-            add(grid);
-        }
-
-        public void setGrid(WorkingMonth workingMonth){
-            dataView = grid.setItems(workingMonth.getWorkingHours());
-        }
-
+        GridExporter<WorkingHour> exporter = GridExporter.newWithDefaults(monthGrid);
+        exporter.withFileName("Stundenliste_"+ worker.getName());
+        exporter.withAvailableFormats(formatList);
+        exporter.open();
     }
 
 
