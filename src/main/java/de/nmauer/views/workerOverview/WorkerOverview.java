@@ -1,5 +1,6 @@
 package de.nmauer.views.workerOverview;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -191,6 +192,7 @@ public class WorkerOverview extends VerticalLayout {
 
                 dialog.addConfirmListener(confirmEvent -> {
                     workerService.delete(worker);
+                    refreshGrid();
                 });
                 dialog.addRejectListener(rejectEvent -> {
                     dialog.close();
@@ -246,6 +248,10 @@ public class WorkerOverview extends VerticalLayout {
                     dialog.close();
                 });
                 dialog.open();
+            });
+
+            showWorkingHoursBtn.addClickListener(buttonClickEvent -> {
+                UI.getCurrent().getPage().setLocation("worker/" + worker.getId());
             });
         });
     }
@@ -308,12 +314,12 @@ public class WorkerOverview extends VerticalLayout {
                     }
 
                     worker.setName(nameField.getValue() != null? nameField.getValue() : "");
-                    worker.setPhoneNumber(contactPhoneNumberField.getValue() != null? nameField.getValue() : "");
-                    worker.setMobileNumber(contactMobileNumberField.getValue() != null? nameField.getValue() : "");
-                    worker.setEmail(contactEmailField.getValue() != null? nameField.getValue() : "");
-                    worker.setStreet(addressStreetField.getValue() != null? nameField.getValue() : "");
-                    worker.setCity(addressCityField.getValue() != null? nameField.getValue() : "");
-                    worker.setZipcode(addressZipcodeField.getValue() != null? nameField.getValue() : "");
+                    worker.setPhoneNumber(contactPhoneNumberField.getValue() != null? contactPhoneNumberField.getValue() : "");
+                    worker.setMobileNumber(contactMobileNumberField.getValue() != null? contactMobileNumberField.getValue() : "");
+                    worker.setEmail(contactEmailField.getValue() != null? contactEmailField.getValue() : "");
+                    worker.setStreet(addressStreetField.getValue() != null? addressStreetField.getValue() : "");
+                    worker.setCity(addressCityField.getValue() != null? addressCityField.getValue() : "");
+                    worker.setZipcode(addressZipcodeField.getValue() != null? addressZipcodeField.getValue() : "");
 
                     workerService.updateWorker(worker);
                 }else{
@@ -341,6 +347,7 @@ public class WorkerOverview extends VerticalLayout {
                         Notification.show("Die Passwörter stimmen nicht überein!");
                     }
                 }
+                refreshGrid();
             });
         }
 

@@ -20,7 +20,6 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 
-
 @PageTitle("Stempel Uhr")
 @Route(value = "time-clock")
 @RouteAlias(value = "")

@@ -19,10 +19,11 @@ public class WorkingHourService {
                 new WorkingHour(
                         rs.getInt("id"),
                         rs.getLong("user_id"),
-                        rs.getInt("year"),
-                        rs.getInt("month"),
+                        rs.getTimestamp("login_date"),
+                        rs.getTimestamp("logout_date"),
                         rs.getInt("day"),
-                        rs.getInt("minutes")
+                        rs.getInt("month"),
+                        rs.getInt("year")
                 )
         );
     }
@@ -32,10 +33,11 @@ public class WorkingHourService {
                 new WorkingHour(
                         rs.getInt("id"),
                         rs.getLong("user_id"),
-                        rs.getInt("year"),
-                        rs.getInt("month"),
+                        rs.getTimestamp("login_date"),
+                        rs.getTimestamp("logout_date"),
                         rs.getInt("day"),
-                        rs.getInt("minutes")
+                        rs.getInt("month"),
+                        rs.getInt("year")
                 )
         );
     }
@@ -45,10 +47,11 @@ public class WorkingHourService {
                 new WorkingHour(
                         rs.getInt("id"),
                         rs.getLong("user_id"),
-                        rs.getInt("year"),
-                        rs.getInt("month"),
+                        rs.getTimestamp("login_date"),
+                        rs.getTimestamp("logout_date"),
                         rs.getInt("day"),
-                        rs.getInt("minutes")
+                        rs.getInt("month"),
+                        rs.getInt("year")
                 )
         );
     }
@@ -66,7 +69,7 @@ public class WorkingHourService {
 
     public int calcWorkingMinutesInMonth(int userId, int month, int year){
         return jdbcTemplate.query(String.format("SELECT SUM(minutes) FROM working_hours WHERE user_id='%s' AND year='%s' AND month='%s'",
-                userId, year, month), (rs, rowNum) -> rs.getInt("SUN(minutes)")).get(0);
+                userId, year, month), (rs, rowNum) -> rs.getInt("SUM(minutes)")).get(0);
     }
 
     public List<WorkingHour> getWorkingHourByYear(int year){
@@ -74,10 +77,11 @@ public class WorkingHourService {
                 new WorkingHour(
                         rs.getInt("id"),
                         rs.getLong("user_id"),
-                        rs.getInt("year"),
-                        rs.getInt("month"),
+                        rs.getTimestamp("login_date"),
+                        rs.getTimestamp("logout_date"),
                         rs.getInt("day"),
-                        rs.getInt("minutes")
+                        rs.getInt("month"),
+                        rs.getInt("year")
                 )
         );
     }
@@ -87,17 +91,18 @@ public class WorkingHourService {
                 new WorkingHour(
                         rs.getInt("id"),
                         rs.getLong("user_id"),
-                        rs.getInt("year"),
-                        rs.getInt("month"),
+                        rs.getTimestamp("login_date"),
+                        rs.getTimestamp("logout_date"),
                         rs.getInt("day"),
-                        rs.getInt("minutes")
+                        rs.getInt("month"),
+                        rs.getInt("year")
                 )
         );
     }
 
     public void update(WorkingHour workingHour){
         jdbcTemplate.update(String.format("UPDATE working_hours SET year='%s', month='%s', day='%s', minutes='%s' WHERE id='%s'",
-                workingHour.getYear(), workingHour.getMonth(), workingHour.getDay(), workingHour.getMinutes(), workingHour.getId()));
+                workingHour.getYear(), workingHour.getMonth(), workingHour.getDay(), workingHour.getWorkingTime(), workingHour.getId()));
     }
 
 }

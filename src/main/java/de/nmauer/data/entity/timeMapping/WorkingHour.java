@@ -1,80 +1,77 @@
 package de.nmauer.data.entity.timeMapping;
 
-import java.util.HashMap;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.util.Calendar;
 
 public class WorkingHour {
 
     private int id;
+
     private long user_id;
-    private int year, month, day, minutes;
 
-    private HashMap<Integer, String> monthNames;
+    private Timestamp loginDate, logoutDate;
 
-    public WorkingHour(int id, long user_id, int year, int month, int day, int minutes) {
+    private int day, month, year;
+
+    public WorkingHour(int id, long user_id, Timestamp loginDate, Timestamp logoutDate, int day, int month, int year) {
         this.id = id;
         this.user_id = user_id;
-        this.year = year;
-        this.month = month;
+        this.loginDate = loginDate;
+        this.logoutDate = logoutDate;
         this.day = day;
-        this.minutes = minutes;
-
-        this.monthNames = new HashMap<>();
-        monthNames.put(1, "Januar");
-        monthNames.put(2, "Februar");
-        monthNames.put(3, "März");
-        monthNames.put(4, "April");
-        monthNames.put(5, "Mai");
-        monthNames.put(6, "Juni");
-        monthNames.put(7, "Juli");
-        monthNames.put(8, "August");
-        monthNames.put(9, "September");
-        monthNames.put(10, "Oktober");
-        monthNames.put(11, "November");
-        monthNames.put(12, "Dezember");
+        this.month = month;
+        this.year = year;
     }
 
     public int getId() {
         return id;
     }
 
+    private Calendar roundTime(long millis) {
+        Date whateverDateYouWant = new Date(millis);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(whateverDateYouWant);
+
+        int unroundedMinutes = calendar.get(Calendar.MINUTE);
+        int mod = unroundedMinutes % 30;
+        calendar.add(Calendar.MINUTE, mod < 15 ? -mod : (30-mod));
+        return calendar;
+    }
+
+    public double getWorkingTime(){
+        return (double) Math.round((float) roundTime((logoutDate.getTime() - loginDate.getTime())).getTimeInMillis() / 3600000 * 100) / 100;
+    }
+
     public long getUser_id() {
         return user_id;
     }
 
-    public int getYear() {
-        return year;
-    }
-
-    public int getMonth() {
-        return month;
-    }
-
-    public int getDay() {
+    public int getDay(){
         return day;
     }
 
-    public int getMinutes() {
-        return minutes;
+    public int getMonth(){
+        return month;
     }
 
-    public void setMinutes(int minutes) {
-        this.minutes = minutes;
+    public int getYear(){
+        return year;
     }
 
-    public void setDay(int day) {
-        this.day = day;
+    public Timestamp getLoginDate() {
+        return loginDate;
     }
 
-    public void setMonth(int month) {
-        this.month = month;
+    public void setLoginDate(Timestamp loginDate) {
+        this.loginDate = loginDate;
     }
 
-    public void setYear(int year) {
-        this.year = year;
+    public Timestamp getLogoutDate() {
+        return logoutDate;
     }
 
-    public String getMonthName(){
-        return monthNames.get(month);
+    public void setLogoutDate(Timestamp logoutDate) {
+        this.logoutDate = logoutDate;
     }
-
 }

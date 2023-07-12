@@ -1,5 +1,7 @@
 package de.nmauer.data.entity.timeMapping;
 
+import java.sql.Date;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
@@ -48,10 +50,10 @@ public class WorkingMonth {
         return workingHours;
     }
 
-    public int getWorkingHoursSum(){
-        int sum = 0;
+    public double getWorkingHoursSum(){
+        double sum = 0;
         for(WorkingHour workingHour: workingHours){
-            sum += workingHour.getMinutes();
+            sum += workingHour.getWorkingTime();
         }
         return sum;
     }

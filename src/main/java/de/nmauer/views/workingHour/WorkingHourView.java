@@ -19,6 +19,9 @@ import de.nmauer.data.service.WorkerService;
 import de.nmauer.data.service.timeTracking.WorkingHourService;
 import jakarta.annotation.security.RolesAllowed;
 
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -31,7 +34,7 @@ public class WorkingHourView extends VerticalLayout {
     private final WorkerService workerService;
     public Grid<WorkingHour> grid;
     public Grid.Column<WorkingHour> worker, year, month,
-            day, minutes;
+            day, minutes, start, end;
 
     public GridListDataView<WorkingHour> dataView;
 
@@ -40,13 +43,12 @@ public class WorkingHourView extends VerticalLayout {
         this.workerService = workerService;
         grid = new Grid<>();
         worker = grid.addColumn(createWorkerNameRender());
-        minutes = grid.addColumn(WorkingHour::getMinutes);
+        minutes = grid.addColumn(WorkingHour::getWorkingTime);
         day = grid.addColumn(WorkingHour::getDay);
         month = grid.addColumn(createWorkerMonthRenderer());
         year = grid.addColumn(WorkingHour::getYear);
-
-
-
+        start = grid.addColumn(createLoginTimeRender());
+        end = grid.addColumn(createLogoutTimeRender());
 
         Stream.of(worker, minutes, day, month, year).forEach(column->{
             column.setResizable(true);
@@ -61,11 +63,12 @@ public class WorkingHourView extends VerticalLayout {
         HeaderRow headerRow = grid.appendHeaderRow();
 
         headerRow.getCell(worker).setComponent(createFilterHeader("Mitarbeiter", hourFilter::setFullName));
-        headerRow.getCell(minutes).setComponent(createFilterHeader("Minuten", hourFilter::setMinutes));
+        headerRow.getCell(minutes).setComponent(createFilterHeader("Stunden", hourFilter::setMinutes));
         headerRow.getCell(day).setComponent(createFilterHeader("Tag", hourFilter::setDay));
         headerRow.getCell(month).setComponent(createFilterHeader("Monat", hourFilter::setMonth));
         headerRow.getCell(year).setComponent(createFilterHeader("Jahr", hourFilter::setYear));
-
+        headerRow.getCell(start).setComponent(createFilterHeader("Begin", hourFilter::setLoginTime));
+        headerRow.getCell(end).setComponent(createFilterHeader("Ende", hourFilter::setLogoutTime));
 
         add(grid);
         setSizeFull();
@@ -78,6 +81,18 @@ public class WorkingHourView extends VerticalLayout {
     private ComponentRenderer<Span, WorkingHour> createWorkerNameRender() {
         return new ComponentRenderer<>(Span::new, (span, workingHour) -> {
             span.setText(String.format("%s", workerService.getWorkerById((int) workingHour.getUser_id()).getName()));
+        });
+    }
+
+    private ComponentRenderer<Span, WorkingHour> createLoginTimeRender() {
+        return new ComponentRenderer<>(Span::new, (span, workingHour) -> {
+            span.setText(new SimpleDateFormat("HH:mm").format(workingHour.getLoginDate()));
+        });
+    }
+
+    private ComponentRenderer<Span, WorkingHour> createLogoutTimeRender() {
+        return new ComponentRenderer<>(Span::new, (span, workingHour) -> {
+            span.setText(new SimpleDateFormat("HH:mm").format(workingHour.getLogoutDate()));
         });
     }
 
@@ -150,6 +165,7 @@ public class WorkingHourView extends VerticalLayout {
         private String year;
         private String month;
         private String minutes;
+        private String loginTime, logoutTime;
 
 
         public WorkingHourFilter(GridListDataView<WorkingHour> dataView) {
@@ -182,12 +198,24 @@ public class WorkingHourView extends VerticalLayout {
             this.dataView.refreshAll();
         }
 
+        public void setLoginTime(String loginTime) {
+            this.loginTime = loginTime;
+            this.dataView.refreshAll();
+        }
+
+        public void setLogoutTime(String logoutTime) {
+            this.logoutTime = logoutTime;
+            this.dataView.refreshAll();
+        }
+
         public boolean test(WorkingHour hour) {
 
             boolean matchesFullName = matches(workerService.getWorkerById((int) hour.getUser_id()).getName(), fullName);
             boolean matchesDay = matches(String.valueOf(hour.getDay()), day);
             boolean matchesYear = matches(String.valueOf(hour.getYear()), year);
             boolean matchesMonth = matches(String.valueOf(hour.getMonth()), month);
+            boolean matchesLoginTime = matches(String.valueOf(loginTime), loginTime);
+            boolean matchesLogoutTime = matches(String.valueOf(logoutTime), logoutTime);
 
             if(!matchesMonth){
                 switch (hour.getMonth()) {
@@ -230,11 +258,9 @@ public class WorkingHourView extends VerticalLayout {
                 }
             }
 
+            boolean matchesMinutes = matches(String.valueOf(hour.getWorkingTime()), minutes);
 
-
-            boolean matchesMinutes = matches(String.valueOf(hour.getMinutes()), minutes);
-
-            return matchesFullName && matchesDay && matchesYear && matchesMonth && matchesMinutes;
+            return matchesFullName && matchesDay && matchesYear && matchesMonth && matchesMinutes && matchesLoginTime && matchesLogoutTime;
         }
 
         private boolean matches(String value, String searchTerm) {

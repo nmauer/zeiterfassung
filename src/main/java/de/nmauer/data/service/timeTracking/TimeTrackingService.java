@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 @Component
@@ -31,21 +30,11 @@ public class TimeTrackingService {
     }
 
     public void logout(long id){
-        Timestamp loginTime = getLogInTime(id);
-        String year = new SimpleDateFormat("YYYY").format(loginTime);
-        String month = new SimpleDateFormat("MM").format(loginTime);
-        String day = new SimpleDateFormat("dd").format(loginTime);
+        Timestamp loginTime = new Timestamp(roundTime(getLogInTime(id).getTime()).getTimeInMillis()/3600000);
+        Timestamp logoutTime = new Timestamp(System.currentTimeMillis());
 
-        int realMinutes = (int) (System.currentTimeMillis() - loginTime.getTime())/60000;
-        int minutes = (int) roundTime(System.currentTimeMillis() - loginTime.getTime()).getTimeInMillis()/60000;
-        if(realMinutes <= 0){
-            jdbcTemplate.update(String.format("DELETE FROM user_login WHERE user_id='%s'", id));
-            return;
-        }else if(realMinutes < 15){
-            minutes = (int) ((System.currentTimeMillis() - loginTime.getTime())/60000);
-        }
-        jdbcTemplate.update(String.format("INSERT INTO working_hours (user_id, year, month, day, minutes) VALUES" +
-                " ('%s', '%s', '%s', '%s', '%s')", id, year, month, day, minutes));
+        jdbcTemplate.update(String.format("INSERT INTO working_hours (user_id, login_date, logout_date) VALUES" +
+                " ('%s', '%s', '%s')", id, loginTime, logoutTime));
 
         jdbcTemplate.update(String.format("DELETE FROM user_login WHERE user_id='%s'", id));
     }
