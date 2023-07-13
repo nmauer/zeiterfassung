@@ -3,6 +3,8 @@ package de.nmauer.data.entity.timeMapping;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
 
 public class WorkingHour {
 
@@ -13,6 +15,7 @@ public class WorkingHour {
     private Timestamp loginDate, logoutDate;
 
     private int day, month, year;
+    private HashMap<Integer, String> monthNames;
 
     public WorkingHour(int id, long user_id, Timestamp loginDate, Timestamp logoutDate, int day, int month, int year) {
         this.id = id;
@@ -22,6 +25,21 @@ public class WorkingHour {
         this.day = day;
         this.month = month;
         this.year = year;
+
+
+        this.monthNames = new HashMap<>();
+        monthNames.put(1, "Januar");
+        monthNames.put(2, "Februar");
+        monthNames.put(3, "März");
+        monthNames.put(4, "April");
+        monthNames.put(5, "Mai");
+        monthNames.put(6, "Juni");
+        monthNames.put(7, "Juli");
+        monthNames.put(8, "August");
+        monthNames.put(9, "September");
+        monthNames.put(10, "Oktober");
+        monthNames.put(11, "November");
+        monthNames.put(12, "Dezember");
     }
     public WorkingHour(long user_id, Timestamp loginDate, Timestamp logoutDate, int day, int month, int year) {
         this.id = -1;
@@ -31,6 +49,20 @@ public class WorkingHour {
         this.day = day;
         this.month = month;
         this.year = year;
+
+        this.monthNames = new HashMap<>();
+        monthNames.put(1, "Januar");
+        monthNames.put(2, "Februar");
+        monthNames.put(3, "März");
+        monthNames.put(4, "April");
+        monthNames.put(5, "Mai");
+        monthNames.put(6, "Juni");
+        monthNames.put(7, "Juli");
+        monthNames.put(8, "August");
+        monthNames.put(9, "September");
+        monthNames.put(10, "Oktober");
+        monthNames.put(11, "November");
+        monthNames.put(12, "Dezember");
     }
 
     public int getId() {
@@ -80,6 +112,23 @@ public class WorkingHour {
         return logoutDate;
     }
 
+    public void setDay(int day) {
+        this.day = day;
+    }
+
+    public void setMonth(int month) {
+        this.month = month;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
+    }
+    public String getDate(){
+        return day + "." + month + "." + year;
+    }
+    public String getMonthName(){
+        return monthNames.get(month);
+    }
     public void setLogoutDate(Timestamp logoutDate) {
         this.logoutDate = logoutDate;
     }

@@ -31,7 +31,7 @@ public class WorkingHourDialog extends Dialog {
     public DateTimePicker startField, endField;
     public Button saveBtn, cancelBtn;
 
-    public WorkingHourDialog(WorkerService workerService, WorkingHourService workingHourService){
+    public WorkingHourDialog(WorkerService workerService, WorkingHourService workingHourService, WorkingHourView workingHourView) {
         this.workerService = workerService;
         this.workingHourService = workingHourService;
         VerticalLayout layout = new VerticalLayout();
@@ -60,8 +60,9 @@ public class WorkingHourDialog extends Dialog {
             }else{
                Timestamp start = new Timestamp(startField.getValue().toInstant(ZoneOffset.UTC).toEpochMilli() - (3600000 *2));
                Timestamp end = new Timestamp(endField.getValue().toInstant(ZoneOffset.UTC).toEpochMilli() - (3600000 *2));
-               WorkingHour workingHour = new WorkingHour( worker.getValue().getId(), start, end, start.getDay(), start.getMonth() +1 , start.getYear()+1900);
+               WorkingHour workingHour = new WorkingHour( worker.getValue().getId(), start, end, start.toLocalDateTime().getDayOfMonth(), start.getMonth() +1 , start.getYear()+1900);
                workingHourService.addWorkingHour(workingHour);
+               workingHourView.refreshGrid();
                close();
            }
         });

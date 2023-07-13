@@ -103,7 +103,7 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
     public ComponentRenderer<Div, WorkingMonth> createButtonRenderer(){
         return new ComponentRenderer<>(Div::new, (div, workingMonth)->{
             Grid<WorkingHour> monthGrid = new Grid<>();
-            date = monthGrid.addColumn(WorkingHour::getDay).setHeader("Datum");
+            date = monthGrid.addColumn(WorkingHour::getDate).setHeader("Datum");
             start = monthGrid.addColumn(WorkingHour::getLoginDate).setHeader("Beginn");
             end = monthGrid.addColumn(WorkingHour::getLogoutDate).setHeader("Ende");
             workingTime = monthGrid.addColumn(WorkingHour::getWorkingTime).setHeader("Stunden");
@@ -116,7 +116,7 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
             });
             Button exportCSVBtn = new Button("Exportieren");
             exportCSVBtn.addClickListener(event -> {
-                export(monthGrid);
+                export(monthGrid, workingMonth);
             });
 
             btnLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
@@ -145,13 +145,8 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
             for(WorkingHour workingHour: workingMonth.getWorkingHours()){
                 NativeLabel day = new NativeLabel();
                 NativeLabel time = new NativeLabel();
-                if(workingHour.getDay() <= 9){
-                    day.setText("0"+workingHour.getDay() + "." + workingHour.getMonth() + "." + workingHour.getYear());
-                }else if(workingHour.getMonth() <= 9){
-                    time.setText("0"+workingHour.getWorkingTime());
-                }else{
-                    day.setText(workingHour.getDay() + "." + workingHour.getMonth() + "." + workingHour.getYear());
-                }
+
+                day.setText(workingHour.getDay() + "." + workingHour.getMonth() + "." + workingHour.getYear());
                 time.setText(String.valueOf(workingHour.getWorkingTime()));
                 board.addRow(createCell(day.getText()), createCell(time.getText()), createCell(new SimpleDateFormat("HH:mm").format(workingHour.getLoginDate()) + " Uhr"), createCell(new SimpleDateFormat("HH:mm").format(workingHour.getLogoutDate()) + " Uhr"));
                 addClassName("board-view");
@@ -180,7 +175,7 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
         return div;
     }
 
-    public void export(Grid<WorkingHour> monthGrid){
+    public void export(Grid<WorkingHour> monthGrid, WorkingMonth workingMonth){
         List<Format> formatList = new ArrayList<>();
         CsvFormat csvFormat = new CsvFormat();
         PdfFormat pdfFormat = new PdfFormat();
@@ -190,7 +185,8 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
         formatList.add(xlsxFormat);
 
         GridExporter<WorkingHour> exporter = GridExporter.newWithDefaults(monthGrid);
-        exporter.withFileName("Stundenliste_"+ worker.getName());
+        exporter.withFileName("Stundenliste-"+ workingMonth.getMonthName()+ "-"+ worker.getName().replace(" ", "_"));
+
         exporter.withAvailableFormats(formatList);
         exporter.open();
     }

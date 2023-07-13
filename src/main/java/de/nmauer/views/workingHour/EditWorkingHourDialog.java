@@ -18,7 +18,7 @@ public class EditWorkingHourDialog extends Dialog {
     public DateTimePicker startField, endField;
     public Button saveButton, cancelButton;
 
-    public EditWorkingHourDialog(WorkingHour workingHour, WorkingHourService workingHourService) {
+    public EditWorkingHourDialog(WorkingHour workingHour, WorkingHourService workingHourService, WorkingHourView workingHourView) {
         VerticalLayout layout = new VerticalLayout();
         header = new H2("Stunden Bearbeiten");
         startField = new DateTimePicker("Begin");
@@ -30,7 +30,11 @@ public class EditWorkingHourDialog extends Dialog {
             Timestamp end = new Timestamp(endField.getValue().toInstant(ZoneOffset.UTC).toEpochMilli() - (3600000 * 2));
             workingHour.setLoginDate(start);
             workingHour.setLogoutDate(end);
+            workingHour.setDay(start.toLocalDateTime().getDayOfMonth());
+            workingHour.setMonth(start.getMonth() + 1);
+            workingHour.setYear(start.getYear() + 1900);
             workingHourService.update(workingHour);
+            workingHourView.refreshGrid();
             close();
         });
         cancelButton =  new Button("Abbrechen");

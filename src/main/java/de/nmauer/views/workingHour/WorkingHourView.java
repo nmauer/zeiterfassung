@@ -56,7 +56,7 @@ public class WorkingHourView extends VerticalLayout {
         header = new H2("Stundenübersicht");
         addBtn = new Button(VaadinIcon.PLUS.create());
         addBtn.addClickListener(event -> {
-            WorkingHourDialog dialog = new WorkingHourDialog(workerService, workingHourService);
+            WorkingHourDialog dialog = new WorkingHourDialog(workerService, workingHourService, this);
             dialog.open();
         });
 
@@ -94,6 +94,7 @@ public class WorkingHourView extends VerticalLayout {
     }
     public void refreshGrid(){
         dataView.removeItems(dataView.getItems().toList());
+        dataView.addItems(workingHourService.getAllWorkingHours());
         dataView.refreshAll();
     }
 
@@ -227,6 +228,7 @@ public class WorkingHourView extends VerticalLayout {
             this.dataView.refreshAll();
         }
 
+
         public boolean test(WorkingHour hour) {
 
             boolean matchesFullName = matches(workerService.getWorkerById((int) hour.getUser_id()).getName(), fullName);
@@ -297,11 +299,12 @@ public class WorkingHourView extends VerticalLayout {
                     }));
             add(new Hr());
             addItem("Edit", e -> e.getItem().ifPresent(workingHour -> {
-                EditWorkingHourDialog dialog = new EditWorkingHourDialog(workingHour, workingHourService);
+                EditWorkingHourDialog dialog = new EditWorkingHourDialog(workingHour, workingHourService, WorkingHourView.this);
                 dialog.open();
             }));
             addItem("Delete", e -> e.getItem().ifPresent(workingHour -> {
                 workingHourService.deleteWorkingHour(workingHour);
+                refreshGrid();
             }));
             add(new Hr());
 
