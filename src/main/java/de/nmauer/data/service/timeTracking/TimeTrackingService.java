@@ -30,11 +30,11 @@ public class TimeTrackingService {
     }
 
     public void logout(long id){
-        Timestamp loginTime = new Timestamp(roundTime(getLogInTime(id).getTime()).getTimeInMillis()/3600000);
+        Timestamp loginTime = getLogInTime(id);
         Timestamp logoutTime = new Timestamp(System.currentTimeMillis());
 
-        jdbcTemplate.update(String.format("INSERT INTO working_hours (user_id, login_date, logout_date) VALUES" +
-                " ('%s', '%s', '%s')", id, loginTime, logoutTime));
+        jdbcTemplate.update(String.format("INSERT INTO working_hours (user_id, login_date, logout_date, day, month, year) VALUES" +
+                " ('%s', '%s', '%s', '%s','%s','%s')", id, loginTime, logoutTime, loginTime.toLocalDateTime().getDayOfMonth(), loginTime.getMonth()+ 1, loginTime.getYear()+1900));
 
         jdbcTemplate.update(String.format("DELETE FROM user_login WHERE user_id='%s'", id));
     }

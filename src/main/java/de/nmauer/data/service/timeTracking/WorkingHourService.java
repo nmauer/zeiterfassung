@@ -101,8 +101,16 @@ public class WorkingHourService {
     }
 
     public void update(WorkingHour workingHour){
-        jdbcTemplate.update(String.format("UPDATE working_hours SET year='%s', month='%s', day='%s', minutes='%s' WHERE id='%s'",
-                workingHour.getYear(), workingHour.getMonth(), workingHour.getDay(), workingHour.getWorkingTime(), workingHour.getId()));
+        jdbcTemplate.update(String.format("UPDATE working_hours SET year='%s', month='%s', day='%s', login_date='%s', logout_date='%s' WHERE id='%s'",
+                workingHour.getYear(), workingHour.getMonth(), workingHour.getDay(), workingHour.getLoginDate(), workingHour.getLogoutDate(), workingHour.getId()));
+    }
+
+    public void addWorkingHour(WorkingHour workingHour){
+        jdbcTemplate.update(String.format("INSERT INTO working_hours (user_id, login_date, logout_date, day, month, year) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')",
+                workingHour.getUser_id(), workingHour.getLoginDate(), workingHour.getLogoutDate(), workingHour.getDay(), workingHour.getMonth(), workingHour.getYear()));
+    }
+    public void deleteWorkingHour(WorkingHour workingHour){
+        jdbcTemplate.update(String.format("DELETE FROM working_hours WHERE id='%s'", workingHour.getId()));
     }
 
 }

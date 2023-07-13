@@ -1,12 +1,20 @@
 package de.nmauer.views.workingHour;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.HeaderRow;
+import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
@@ -14,6 +22,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import de.nmauer.data.entity.Worker;
 import de.nmauer.data.entity.timeMapping.WorkingHour;
 import de.nmauer.data.service.WorkerService;
 import de.nmauer.data.service.timeTracking.WorkingHourService;
@@ -33,15 +42,24 @@ public class WorkingHourView extends VerticalLayout {
     private final WorkingHourService workingHourService;
     private final WorkerService workerService;
     public Grid<WorkingHour> grid;
+    public H2 header;
     public Grid.Column<WorkingHour> worker, year, month,
             day, minutes, start, end;
 
     public GridListDataView<WorkingHour> dataView;
+    public Button editBtn, removeBtn, addBtn;
 
     public WorkingHourView(WorkingHourService workingHourService, WorkerService workerService) {
         this.workingHourService = workingHourService;
         this.workerService = workerService;
         grid = new Grid<>();
+        header = new H2("Stundenübersicht");
+        addBtn = new Button(VaadinIcon.PLUS.create());
+        addBtn.addClickListener(event -> {
+            WorkingHourDialog dialog = new WorkingHourDialog(workerService, workingHourService);
+            dialog.open();
+        });
+
         worker = grid.addColumn(createWorkerNameRender());
         minutes = grid.addColumn(WorkingHour::getWorkingTime);
         day = grid.addColumn(WorkingHour::getDay);
@@ -61,6 +79,7 @@ public class WorkingHourView extends VerticalLayout {
 
         grid.getHeaderRows().clear();
         HeaderRow headerRow = grid.appendHeaderRow();
+        WorkingHourContextMenu contextMenu = new WorkingHourContextMenu(grid);
 
         headerRow.getCell(worker).setComponent(createFilterHeader("Mitarbeiter", hourFilter::setFullName));
         headerRow.getCell(minutes).setComponent(createFilterHeader("Stunden", hourFilter::setMinutes));
@@ -70,7 +89,7 @@ public class WorkingHourView extends VerticalLayout {
         headerRow.getCell(start).setComponent(createFilterHeader("Begin", hourFilter::setLoginTime));
         headerRow.getCell(end).setComponent(createFilterHeader("Ende", hourFilter::setLogoutTime));
 
-        add(grid);
+        add(new HorizontalLayout(header, addBtn), grid);
         setSizeFull();
     }
     public void refreshGrid(){
@@ -266,6 +285,40 @@ public class WorkingHourView extends VerticalLayout {
         private boolean matches(String value, String searchTerm) {
             return searchTerm == null || searchTerm.isEmpty()
                     || value.toLowerCase().contains(searchTerm.toLowerCase());
+        }
+    }
+    private class WorkingHourContextMenu extends GridContextMenu<WorkingHour> {
+        public WorkingHourContextMenu(Grid<WorkingHour> target) {
+            super(target);
+
+            GridMenuItem<WorkingHour> nameItem = addItem("",
+                    e -> e.getItem().ifPresent(workingHour -> {
+                        UI.getCurrent().getPage().open(String.format("worker/%s", workingHour.getUser_id()));
+                    }));
+            add(new Hr());
+            addItem("Edit", e -> e.getItem().ifPresent(workingHour -> {
+                EditWorkingHourDialog dialog = new EditWorkingHourDialog(workingHour, workingHourService);
+                dialog.open();
+            }));
+            addItem("Delete", e -> e.getItem().ifPresent(workingHour -> {
+                workingHourService.deleteWorkingHour(workingHour);
+            }));
+            add(new Hr());
+
+            GridMenuItem<WorkingHour> dateItem = addItem("",
+                    e -> e.getItem().ifPresent(workingHour -> {
+                        ((TextField)day.getHeaderComponent().getChildren().toList().get(1)).setValue(String.valueOf(workingHour.getDay()));
+                        ((TextField)month.getHeaderComponent().getChildren().toList().get(1)).setValue(String.valueOf(workingHour.getMonth()));
+                        ((TextField)year.getHeaderComponent().getChildren().toList().get(1)).setValue(String.valueOf(workingHour.getYear()));
+                    }));
+            setDynamicContentHandler(workingHour -> {
+                // Do not show context menu when header is clicked
+                if (workingHour == null)
+                    return false;
+                nameItem.setText(String.format("%s", workerService.getWorkerById((int) workingHour.getUser_id()).getName()));
+                dateItem.setText(String.format("%s.%s.%s", workingHour.getDay(), workingHour.getMonth(), workingHour.getYear()));
+                return true;
+            });
         }
     }
 

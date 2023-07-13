@@ -23,6 +23,15 @@ public class WorkingHour {
         this.month = month;
         this.year = year;
     }
+    public WorkingHour(long user_id, Timestamp loginDate, Timestamp logoutDate, int day, int month, int year) {
+        this.id = -1;
+        this.user_id = user_id;
+        this.loginDate = loginDate;
+        this.logoutDate = logoutDate;
+        this.day = day;
+        this.month = month;
+        this.year = year;
+    }
 
     public int getId() {
         return id;
