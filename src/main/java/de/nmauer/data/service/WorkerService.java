@@ -107,6 +107,9 @@ public class WorkerService {
             jdbcTemplate.update(String.format("INSERT INTO application_user (version, name, username, hashed_password, address_id, contact_information_id) " +
                             "VALUES ('%s', '%s', '%s', '%s', '%s', '%s')",
                     1, worker.getName(), worker.getUsername(), worker.getHashedPassword(), addressId, contactId));
+            int userId = jdbcTemplate.query(String.format("SELECT id FROM application_user WHERE username='%s'", worker.getUsername()), (rs, rowNum) ->
+                    rs.getInt("id")).get(0)+1;
+            jdbcTemplate.update(String.format("INSERT INTO user_roles (user_id, roles) VALUES ('%s', '%s')", userId, "USER"));
         }
     }
 

@@ -234,7 +234,7 @@ public class WorkerOverview extends VerticalLayout {
                 Button cancelBtn = new Button("Abbrechen");
 
                 dialog.getFooter().add(cancelBtn, confirmBtn);
-                dialog.add(passwordField, confirmPasswordField);
+                dialog.add(new VerticalLayout(passwordField, confirmPasswordField));
 
                 confirmBtn.addClickListener(buttonClickEvent1 -> {
                     if(!(passwordField.isEmpty() || confirmPasswordField.isEmpty()) && !passwordField.getValue().equals(confirmPasswordField.getValue())){
@@ -243,6 +243,7 @@ public class WorkerOverview extends VerticalLayout {
                     }
                     worker.setHashedPassword(BCrypt.hashpw(passwordField.getValue(), BCrypt.gensalt(12)));
                     workerService.updateWorker(worker);
+                    dialog.close();
                 });
                 cancelBtn.addClickListener(buttonClickEvent1 -> {
                     dialog.close();
@@ -322,6 +323,7 @@ public class WorkerOverview extends VerticalLayout {
                     worker.setZipcode(addressZipcodeField.getValue() != null? addressZipcodeField.getValue() : "");
 
                     workerService.updateWorker(worker);
+                    dialog.close();
                 }else{
                     if(nameField.isEmpty() || usernameField.isEmpty() || passwordField.isEmpty() || confirmPasswordField.isEmpty()){
                         Notification.show("Bitte füllen Sie alle Pflichtfelder aus!");
@@ -332,7 +334,7 @@ public class WorkerOverview extends VerticalLayout {
                                 -1,
                                 nameField.getValue(),
                                 usernameField.getValue(),
-                                passwordField.getValue(),
+                                BCrypt.hashpw(passwordField.getValue(), BCrypt.gensalt(12)),
                                 contactPhoneNumberField.getValue(),
                                 contactMobileNumberField.getValue(),
                                 contactEmailField.getValue(),

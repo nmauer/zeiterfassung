@@ -95,22 +95,26 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
             span.setText(workingHour.getMonthName() + " " + workingHour.getYear());
         });
     }
+    private Grid.Column<WorkingHour> date;
+    private Grid.Column<WorkingHour> start;
+    private Grid.Column<WorkingHour> end;
+    private Grid.Column<WorkingHour> workingTime;
 
     public ComponentRenderer<Div, WorkingMonth> createButtonRenderer(){
-        return new ComponentRenderer<>(Div::new, (div, workingHour)->{
+        return new ComponentRenderer<>(Div::new, (div, workingMonth)->{
             Grid<WorkingHour> monthGrid = new Grid<>();
-            Grid.Column<WorkingHour> date = monthGrid.addColumn(WorkingHour::getDay).setHeader("Datum");
-            Grid.Column<WorkingHour> start = monthGrid.addColumn(WorkingHour::getLoginDate).setHeader("Beginn");
-            Grid.Column<WorkingHour> end = monthGrid.addColumn(WorkingHour::getLogoutDate).setHeader("Ende");
-            Grid.Column<WorkingHour> minutes = monthGrid.addColumn(WorkingHour::getWorkingTime).setHeader("Stunden");
-            GridListDataView<WorkingHour> monthDataView = monthGrid.setItems(workingHourService.getWorkingHourByUserId(worker.getId()));
+            date = monthGrid.addColumn(WorkingHour::getDay).setHeader("Datum");
+            start = monthGrid.addColumn(WorkingHour::getLoginDate).setHeader("Beginn");
+            end = monthGrid.addColumn(WorkingHour::getLogoutDate).setHeader("Ende");
+            workingTime = monthGrid.addColumn(WorkingHour::getWorkingTime).setHeader("Stunden");
+            GridListDataView<WorkingHour> monthDataView = monthGrid.setItems(workingHourService.getWorkingHourByUserId(worker.getId(), workingMonth.getMonth(), workingMonth.getYear()));
 
             HorizontalLayout btnLayout = new HorizontalLayout();
             Button showDetailsBtn = new Button("Details anzeigen");
             showDetailsBtn.addClickListener(event -> {
-                grid.setDetailsVisible(workingHour,!grid.isDetailsVisible(workingHour));
+                grid.setDetailsVisible(workingMonth,!grid.isDetailsVisible(workingMonth));
             });
-            Button exportCSVBtn = new Button("Export als CSV");
+            Button exportCSVBtn = new Button("Exportieren");
             exportCSVBtn.addClickListener(event -> {
                 export(monthGrid);
             });
@@ -181,7 +185,7 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
         CsvFormat csvFormat = new CsvFormat();
         PdfFormat pdfFormat = new PdfFormat();
         XlsxFormat xlsxFormat =  new XlsxFormat();
-        formatList.add(csvFormat);
+//        formatList.add(csvFormat);
         formatList.add(pdfFormat);
         formatList.add(xlsxFormat);
 
