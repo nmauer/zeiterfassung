@@ -4,6 +4,7 @@ import de.nmauer.data.DateType;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -136,17 +137,28 @@ public class WorkingHour {
     public void setYear(int year) {
         this.year = year;
     }
+
     public String getDate(){
         return day + "." + month + "." + year;
     }
+
     public String getMonthName(){
         return monthNames.get(month);
     }
+
     public void setLogoutDate(Timestamp logoutDate) {
         this.logoutDate = logoutDate;
     }
 
     public String getPauseTime(){
         return getWorkingTime()>6 ? "": "30m";
+    }
+
+    public String getBeginFormatted(){
+        return new SimpleDateFormat("HH:mm").format(new Date(loginDate.getTime()));
+    }
+
+    public String getEndFormatted(){
+        return new SimpleDateFormat("HH:mm").format(new Date(logoutDate.getTime()));
     }
 }

@@ -58,15 +58,15 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
 
         grid = new Grid<>();
 
-
         Grid.Column<WorkingMonth> sort = grid.addColumn(WorkingMonth::getSorting);
         Grid.Column<WorkingMonth> monthAndYear = grid.addColumn(createMonthYearRenderer()).setHeader("Monat");
         Grid.Column<WorkingMonth> hours = grid.addColumn(WorkingMonth::getWorkingHoursSum).setHeader("Stunden");
+        Grid.Column<WorkingMonth> usedVacationDays = grid.addColumn(WorkingMonth::getVacationDayAmount).setHeader("Verwendete Urlaubstage");
         Grid.Column<WorkingMonth> buttons = grid.addColumn(createButtonRenderer());
 
         sort.setVisible(false);
 
-        Stream.of(monthAndYear, hours).forEach(col -> col.setResizable(true));
+        Stream.of(monthAndYear, hours, usedVacationDays).forEach(col -> col.setResizable(true));
         monthAndYear.setWidth("100px");
 
         GridSortOrder<WorkingMonth> order = new GridSortOrder<>(sort, SortDirection.DESCENDING);

@@ -119,4 +119,9 @@ public class WorkingHourService {
         jdbcTemplate.update(String.format("DELETE FROM working_hours WHERE id='%s'", workingHour.getId()));
     }
 
+    public int getUsedVacationDayAmountByUser(int userId){
+        return jdbcTemplate.query(String.format("SELECT COUNT(*) FROM working_hours WHERE day_type='%s'", DateType.VACATION),
+                (rs, rowNum) -> rs.getInt("COUNT(*)")).get(0);
+    }
+
 }
