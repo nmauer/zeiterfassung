@@ -61,12 +61,12 @@ public class WorkingHourView extends VerticalLayout {
         });
 
         worker = grid.addColumn(createWorkerNameRender());
-        minutes = grid.addColumn(WorkingHour::getWorkingTime);
+        minutes = grid.addColumn(WorkingHour::getWorkingTimeFormatted);
         day = grid.addColumn(WorkingHour::getDay);
         month = grid.addColumn(createWorkerMonthRenderer());
         year = grid.addColumn(WorkingHour::getYear);
-        start = grid.addColumn(createLoginTimeRender());
-        end = grid.addColumn(createLogoutTimeRender());
+        start = grid.addColumn(WorkingHour::getBeginFormatted);
+        end = grid.addColumn(WorkingHour::getEndFormatted);
         workType = grid.addColumn(WorkingHour::getDateTypeName);
 
         Stream.of(worker, minutes, day, month, year, workType).forEach(column->{
@@ -328,7 +328,7 @@ public class WorkingHourView extends VerticalLayout {
                 if (workingHour == null)
                     return false;
                 nameItem.setText(String.format("%s", workerService.getWorkerById((int) workingHour.getUser_id()).getName()));
-                dateItem.setText(String.format("%s.%s.%s", workingHour.getDay(), workingHour.getMonth(), workingHour.getYear()));
+                dateItem.setText(workingHour.getDate());
                 return true;
             });
         }

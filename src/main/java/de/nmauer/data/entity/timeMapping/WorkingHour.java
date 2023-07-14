@@ -143,7 +143,20 @@ public class WorkingHour {
     }
 
     public String getDate(){
-        return day + "." + month + "." + year;
+        String date = "";
+        if(day <= 9){
+            date += "0" + day;
+        }else{
+            date += day;
+        }
+        date +=".";
+        if(month <= 9){
+            date += "0" + month;
+        }else{
+            date += month;
+        }
+        date +=  "."+ getYear();
+        return date;
     }
 
     public String getMonthName(){
@@ -155,14 +168,17 @@ public class WorkingHour {
     }
 
     public String getPauseTime(){
-        return getWorkingTime()>6 ? "": "30m";
+        return getWorkingTime()<6 ? "0m": "30m";
     }
 
     public String getBeginFormatted(){
-        return new SimpleDateFormat("HH:mm").format(new Date(loginDate.getTime()));
+        return new SimpleDateFormat("HH:mm").format(new Date(loginDate.getTime())) + " Uhr";
     }
 
     public String getEndFormatted(){
-        return new SimpleDateFormat("HH:mm").format(new Date(logoutDate.getTime()));
+        return new SimpleDateFormat("HH:mm").format(new Date(logoutDate.getTime())) + " Uhr";
+    }
+    public String getWorkingTimeFormatted(){
+        return getWorkingTime() + "h";
     }
 }
