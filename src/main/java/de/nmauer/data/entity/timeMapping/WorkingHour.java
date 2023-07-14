@@ -49,6 +49,10 @@ public class WorkingHour {
     public DateType getDateType() {
         return dateType;
     }
+    public String getDateTypeName() {
+        return dateType.getTitle();
+    }
+
 
     public void setDateType(DateType dateType) {
         this.dateType = dateType;

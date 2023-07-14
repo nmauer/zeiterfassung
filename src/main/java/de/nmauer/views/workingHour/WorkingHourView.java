@@ -67,7 +67,7 @@ public class WorkingHourView extends VerticalLayout {
         year = grid.addColumn(WorkingHour::getYear);
         start = grid.addColumn(createLoginTimeRender());
         end = grid.addColumn(createLogoutTimeRender());
-        workType = grid.addColumn(WorkingHour::getDateType);
+        workType = grid.addColumn(WorkingHour::getDateTypeName);
 
         Stream.of(worker, minutes, day, month, year, workType).forEach(column->{
             column.setResizable(true);
@@ -89,7 +89,7 @@ public class WorkingHourView extends VerticalLayout {
         headerRow.getCell(year).setComponent(createFilterHeader("Jahr", hourFilter::setYear));
         headerRow.getCell(start).setComponent(createFilterHeader("Begin", hourFilter::setLoginTime));
         headerRow.getCell(end).setComponent(createFilterHeader("Ende", hourFilter::setLogoutTime));
-        headerRow.getCell(workType).setComponent(createFilterHeader("ToDo", hourFilter::setLogoutTime)); // ToDo
+        headerRow.getCell(workType).setComponent(createFilterHeader("ToDo", hourFilter::setDayType)); // ToDo
 
         add(new HorizontalLayout(header, addBtn), grid);
         setSizeFull();
@@ -234,6 +234,7 @@ public class WorkingHourView extends VerticalLayout {
 
         public void setDayType(String dayType) {
             this.dayType = dayType;
+            this.dataView.refreshAll();
         }
 
         public boolean test(WorkingHour hour) {
@@ -242,9 +243,9 @@ public class WorkingHourView extends VerticalLayout {
             boolean matchesDay = matches(String.valueOf(hour.getDay()), day);
             boolean matchesYear = matches(String.valueOf(hour.getYear()), year);
             boolean matchesMonth = matches(String.valueOf(hour.getMonth()), month);
-            boolean matchesLoginTime = matches(String.valueOf(loginTime), loginTime);
-            boolean matchesLogoutTime = matches(String.valueOf(logoutTime), logoutTime);
-            boolean matchesDayType = matches(String.valueOf(dayType), dayType);
+            boolean matchesLoginTime = matches(String.valueOf(hour.getLoginDate()), loginTime);
+            boolean matchesLogoutTime = matches(String.valueOf(hour.getLogoutDate()), logoutTime);
+            boolean matchesDayType = matches(String.valueOf(hour.getDateTypeName()), dayType);
 
             if(!matchesMonth){
                 switch (hour.getMonth()) {
