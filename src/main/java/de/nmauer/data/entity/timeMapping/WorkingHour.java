@@ -1,5 +1,7 @@
 package de.nmauer.data.entity.timeMapping;
 
+import de.nmauer.data.DateType;
+
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Calendar;
@@ -13,11 +15,11 @@ public class WorkingHour {
     private long user_id;
 
     private Timestamp loginDate, logoutDate;
-
+    private DateType dateType;
     private int day, month, year;
     private HashMap<Integer, String> monthNames;
 
-    public WorkingHour(int id, long user_id, Timestamp loginDate, Timestamp logoutDate, int day, int month, int year) {
+    public WorkingHour(int id, long user_id, Timestamp loginDate, Timestamp logoutDate, int day, int month, int year, DateType dateType) {
         this.id = id;
         this.user_id = user_id;
         this.loginDate = loginDate;
@@ -25,6 +27,7 @@ public class WorkingHour {
         this.day = day;
         this.month = month;
         this.year = year;
+        this.dateType = dateType;
 
 
         this.monthNames = new HashMap<>();
@@ -41,7 +44,16 @@ public class WorkingHour {
         monthNames.put(11, "November");
         monthNames.put(12, "Dezember");
     }
-    public WorkingHour(long user_id, Timestamp loginDate, Timestamp logoutDate, int day, int month, int year) {
+
+    public DateType getDateType() {
+        return dateType;
+    }
+
+    public void setDateType(DateType dateType) {
+        this.dateType = dateType;
+    }
+
+    public WorkingHour(long user_id, Timestamp loginDate, Timestamp logoutDate, int day, int month, int year, DateType dateType) {
         this.id = -1;
         this.user_id = user_id;
         this.loginDate = loginDate;
@@ -49,6 +61,7 @@ public class WorkingHour {
         this.day = day;
         this.month = month;
         this.year = year;
+        this.dateType = dateType;
 
         this.monthNames = new HashMap<>();
         monthNames.put(1, "Januar");

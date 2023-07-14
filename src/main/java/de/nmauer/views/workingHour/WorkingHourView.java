@@ -44,7 +44,7 @@ public class WorkingHourView extends VerticalLayout {
     public Grid<WorkingHour> grid;
     public H2 header;
     public Grid.Column<WorkingHour> worker, year, month,
-            day, minutes, start, end;
+            day, minutes, start, end, workType;
 
     public GridListDataView<WorkingHour> dataView;
     public Button editBtn, removeBtn, addBtn;
@@ -67,8 +67,9 @@ public class WorkingHourView extends VerticalLayout {
         year = grid.addColumn(WorkingHour::getYear);
         start = grid.addColumn(createLoginTimeRender());
         end = grid.addColumn(createLogoutTimeRender());
+        workType = grid.addColumn(WorkingHour::getDateType);
 
-        Stream.of(worker, minutes, day, month, year).forEach(column->{
+        Stream.of(worker, minutes, day, month, year, workType).forEach(column->{
             column.setResizable(true);
         });
 
@@ -88,6 +89,7 @@ public class WorkingHourView extends VerticalLayout {
         headerRow.getCell(year).setComponent(createFilterHeader("Jahr", hourFilter::setYear));
         headerRow.getCell(start).setComponent(createFilterHeader("Begin", hourFilter::setLoginTime));
         headerRow.getCell(end).setComponent(createFilterHeader("Ende", hourFilter::setLogoutTime));
+        headerRow.getCell(workType).setComponent(createFilterHeader("ToDo", hourFilter::setLogoutTime)); // ToDo
 
         add(new HorizontalLayout(header, addBtn), grid);
         setSizeFull();
@@ -185,7 +187,9 @@ public class WorkingHourView extends VerticalLayout {
         private String year;
         private String month;
         private String minutes;
-        private String loginTime, logoutTime;
+        private String loginTime;
+        private String logoutTime;
+        private String dayType;
 
 
         public WorkingHourFilter(GridListDataView<WorkingHour> dataView) {
@@ -228,6 +232,9 @@ public class WorkingHourView extends VerticalLayout {
             this.dataView.refreshAll();
         }
 
+        public void setDayType(String dayType) {
+            this.dayType = dayType;
+        }
 
         public boolean test(WorkingHour hour) {
 
@@ -237,6 +244,7 @@ public class WorkingHourView extends VerticalLayout {
             boolean matchesMonth = matches(String.valueOf(hour.getMonth()), month);
             boolean matchesLoginTime = matches(String.valueOf(loginTime), loginTime);
             boolean matchesLogoutTime = matches(String.valueOf(logoutTime), logoutTime);
+            boolean matchesDayType = matches(String.valueOf(dayType), dayType);
 
             if(!matchesMonth){
                 switch (hour.getMonth()) {
@@ -281,7 +289,7 @@ public class WorkingHourView extends VerticalLayout {
 
             boolean matchesMinutes = matches(String.valueOf(hour.getWorkingTime()), minutes);
 
-            return matchesFullName && matchesDay && matchesYear && matchesMonth && matchesMinutes && matchesLoginTime && matchesLogoutTime;
+            return matchesFullName && matchesDay && matchesYear && matchesMonth && matchesMinutes && matchesLoginTime && matchesLogoutTime && matchesDayType;
         }
 
         private boolean matches(String value, String searchTerm) {

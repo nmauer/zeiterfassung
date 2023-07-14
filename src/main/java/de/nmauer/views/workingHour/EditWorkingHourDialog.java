@@ -4,7 +4,10 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
+import de.nmauer.data.DateType;
 import de.nmauer.data.entity.timeMapping.WorkingHour;
 import de.nmauer.data.service.timeTracking.WorkingHourService;
 
@@ -17,6 +20,7 @@ public class EditWorkingHourDialog extends Dialog {
     public H2 header;
     public DateTimePicker startField, endField;
     public Button saveButton, cancelButton;
+    public Select<DateType> workingType;
 
     public EditWorkingHourDialog(WorkingHour workingHour, WorkingHourService workingHourService, WorkingHourView workingHourView) {
         VerticalLayout layout = new VerticalLayout();
@@ -25,6 +29,12 @@ public class EditWorkingHourDialog extends Dialog {
         endField = new DateTimePicker("Ende");
         saveButton = new Button("Speichern");
         saveButton.setThemeName("success");
+        workingType = new Select<>();
+        workingType.setLabel("ToDo"); // ToDo
+        workingType.setWidth("100%");
+        workingType.setItems(DateType.values());
+        workingType.setItemLabelGenerator(DateType::getTitle);
+        workingType.setValue(DateType.WORKING_DAY);
         saveButton.addClickListener(event -> {
             Timestamp start = new Timestamp(startField.getValue().toInstant(ZoneOffset.UTC).toEpochMilli() - (3600000 * 2));
             Timestamp end = new Timestamp(endField.getValue().toInstant(ZoneOffset.UTC).toEpochMilli() - (3600000 * 2));
@@ -33,6 +43,7 @@ public class EditWorkingHourDialog extends Dialog {
             workingHour.setDay(start.toLocalDateTime().getDayOfMonth());
             workingHour.setMonth(start.getMonth() + 1);
             workingHour.setYear(start.getYear() + 1900);
+            workingHour.setDateType(workingType.getValue());
             workingHourService.update(workingHour);
             workingHourView.refreshGrid();
             close();
@@ -48,8 +59,8 @@ public class EditWorkingHourDialog extends Dialog {
         endField.setValue(workingHour.getLogoutDate().toLocalDateTime());
 
 
-
-        layout.add(startField, endField);
+        layout.setAlignItems(FlexComponent.Alignment.CENTER);
+        layout.add(workingType,startField, endField);
         getFooter().add(cancelButton, saveButton);
         add(header, layout);
     }

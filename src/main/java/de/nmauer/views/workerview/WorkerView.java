@@ -99,14 +99,17 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
     private Grid.Column<WorkingHour> start;
     private Grid.Column<WorkingHour> end;
     private Grid.Column<WorkingHour> workingTime;
+    private Grid.Column<WorkingHour> workingType;
 
     public ComponentRenderer<Div, WorkingMonth> createButtonRenderer(){
         return new ComponentRenderer<>(Div::new, (div, workingMonth)->{
             Grid<WorkingHour> monthGrid = new Grid<>();
             date = monthGrid.addColumn(WorkingHour::getDate).setHeader("Datum");
-            start = monthGrid.addColumn(WorkingHour::getLoginDate).setHeader("Beginn");
+            start = monthGrid.addColumn(WorkingHour::getLoginDate).setHeader("Begin");
             end = monthGrid.addColumn(WorkingHour::getLogoutDate).setHeader("Ende");
             workingTime = monthGrid.addColumn(WorkingHour::getWorkingTime).setHeader("Stunden");
+            workingType = monthGrid.addColumn(WorkingHour::getDateType).setHeader("ToDo"); // ToDo
+
             GridListDataView<WorkingHour> monthDataView = monthGrid.setItems(workingHourService.getWorkingHourByUserId(worker.getId(), workingMonth.getMonth(), workingMonth.getYear()));
 
             HorizontalLayout btnLayout = new HorizontalLayout();
@@ -148,7 +151,7 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
 
                 day.setText(workingHour.getDay() + "." + workingHour.getMonth() + "." + workingHour.getYear());
                 time.setText(String.valueOf(workingHour.getWorkingTime()));
-                board.addRow(createCell(day.getText()), createCell(time.getText()), createCell(new SimpleDateFormat("HH:mm").format(workingHour.getLoginDate()) + " Uhr"), createCell(new SimpleDateFormat("HH:mm").format(workingHour.getLogoutDate()) + " Uhr"));
+                board.addRow(createCell(day.getText()), createCell(time.getText() + " h"), createCell(new SimpleDateFormat("HH:mm").format(workingHour.getLoginDate()) + " Uhr - " + new SimpleDateFormat("HH:mm").format(workingHour.getLogoutDate()) + " Uhr"), createCell(workingHour.getDateType().toString()));
                 addClassName("board-view");
                 layout.add(board);
             }
@@ -156,7 +159,7 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
     }
     public void createBoard(){
         board = new Board();
-        board.addRow(createHeaderCell("Tag"),createHeaderCell("Stunden"), createHeaderCell("Begin"), createHeaderCell("Ende"));
+        board.addRow(createHeaderCell("Tag"),createHeaderCell("Stunden"), createHeaderCell("Begin - Ende"), createHeaderCell("ToDo")); // ToDo
     }
     public Div createCell(String text){
         Div div = new Div();
