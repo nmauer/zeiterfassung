@@ -132,4 +132,8 @@ public class WorkingHour {
     public void setLogoutDate(Timestamp logoutDate) {
         this.logoutDate = logoutDate;
     }
+
+    public String getPauseTime(){
+        return getWorkingTime()>6 ? "": "30m";
+    }
 }
