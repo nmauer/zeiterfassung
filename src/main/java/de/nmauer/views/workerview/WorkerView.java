@@ -99,6 +99,7 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
     private Grid.Column<WorkingHour> start;
     private Grid.Column<WorkingHour> end;
     private Grid.Column<WorkingHour> workingTime;
+    private Grid.Column<WorkingHour> pauseTime;
     private Grid.Column<WorkingHour> workingType;
 
     public ComponentRenderer<Div, WorkingMonth> createButtonRenderer(){
@@ -108,8 +109,8 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
             start = monthGrid.addColumn(WorkingHour::getLoginDate).setHeader("Begin");
             end = monthGrid.addColumn(WorkingHour::getLogoutDate).setHeader("Ende");
             workingTime = monthGrid.addColumn(WorkingHour::getWorkingTime).setHeader("Stunden");
+            pauseTime = monthGrid.addColumn(WorkingHour::getPauseTime).setHeader("Pausenzeit");
             workingType = monthGrid.addColumn(WorkingHour::getDateType).setHeader("ToDo"); // ToDo
-
             GridListDataView<WorkingHour> monthDataView = monthGrid.setItems(workingHourService.getWorkingHourByUserId(worker.getId(), workingMonth.getMonth(), workingMonth.getYear()));
 
             HorizontalLayout btnLayout = new HorizontalLayout();
