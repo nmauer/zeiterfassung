@@ -1,5 +1,6 @@
 package de.nmauer.views.workerview;
 
+import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -11,6 +12,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.SortDirection;
+import com.vaadin.flow.data.provider.SortOrder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasDynamicTitle;
@@ -58,15 +60,15 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
 
         grid = new Grid<>();
 
-
         Grid.Column<WorkingMonth> sort = grid.addColumn(WorkingMonth::getSorting);
         Grid.Column<WorkingMonth> monthAndYear = grid.addColumn(createMonthYearRenderer()).setHeader("Monat");
         Grid.Column<WorkingMonth> hours = grid.addColumn(WorkingMonth::getWorkingHoursSum).setHeader("Stunden");
+        Grid.Column<WorkingMonth> usedVacationDays = grid.addColumn(WorkingMonth::getVacationDayAmount).setHeader("Verwendete Urlaubstage");
         Grid.Column<WorkingMonth> buttons = grid.addColumn(createButtonRenderer());
 
         sort.setVisible(false);
 
-        Stream.of(monthAndYear, hours).forEach(col -> col.setResizable(true));
+        Stream.of(monthAndYear, hours, usedVacationDays).forEach(col -> col.setResizable(true));
         monthAndYear.setWidth("100px");
 
         GridSortOrder<WorkingMonth> order = new GridSortOrder<>(sort, SortDirection.DESCENDING);
@@ -100,15 +102,19 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
     private Grid.Column<WorkingHour> end;
     private Grid.Column<WorkingHour> workingTime;
     private Grid.Column<WorkingHour> pauseTime;
+    private Grid.Column<WorkingHour> workingType;
 
     public ComponentRenderer<Div, WorkingMonth> createButtonRenderer(){
         return new ComponentRenderer<>(Div::new, (div, workingMonth)->{
             Grid<WorkingHour> monthGrid = new Grid<>();
             date = monthGrid.addColumn(WorkingHour::getDate).setHeader("Datum");
-            start = monthGrid.addColumn(WorkingHour::getLoginDate).setHeader("Beginn");
-            end = monthGrid.addColumn(WorkingHour::getLogoutDate).setHeader("Ende");
-            workingTime = monthGrid.addColumn(WorkingHour::getWorkingTime).setHeader("Stunden");
+            start = monthGrid.addColumn(WorkingHour::getBeginFormatted).setHeader("Begin");
+            end = monthGrid.addColumn(WorkingHour::getEndFormatted).setHeader("Ende");
+            workingTime = monthGrid.addColumn(WorkingHour::getWorkingTimeFormatted).setHeader("Stunden");
             pauseTime = monthGrid.addColumn(WorkingHour::getPauseTime).setHeader("Pausenzeit");
+            workingType = monthGrid.addColumn(WorkingHour::getDateType).setHeader("ToDo"); // ToDo
+            GridSortOrder<WorkingHour> order = new GridSortOrder<>(date, SortDirection.ASCENDING);
+            monthGrid.sort(Arrays.asList(order));
             GridListDataView<WorkingHour> monthDataView = monthGrid.setItems(workingHourService.getWorkingHourByUserId(worker.getId(), workingMonth.getMonth(), workingMonth.getYear()));
 
             HorizontalLayout btnLayout = new HorizontalLayout();
@@ -148,9 +154,9 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
                 NativeLabel day = new NativeLabel();
                 NativeLabel time = new NativeLabel();
 
-                day.setText(workingHour.getDay() + "." + workingHour.getMonth() + "." + workingHour.getYear());
+                day.setText(workingHour.getDate());
                 time.setText(String.valueOf(workingHour.getWorkingTime()));
-                board.addRow(createCell(day.getText()), createCell(time.getText()), createCell(new SimpleDateFormat("HH:mm").format(workingHour.getLoginDate()) + " Uhr"), createCell(new SimpleDateFormat("HH:mm").format(workingHour.getLogoutDate()) + " Uhr"));
+                board.addRow(createCell(day.getText()), createCell(time.getText() + "h"), createCell(workingHour.getBeginFormatted() + " - " + workingHour.getEndFormatted()), createCell(workingHour.getDateType().toString()));
                 addClassName("board-view");
                 layout.add(board);
             }
@@ -158,7 +164,7 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
     }
     public void createBoard(){
         board = new Board();
-        board.addRow(createHeaderCell("Tag"),createHeaderCell("Stunden"), createHeaderCell("Begin"), createHeaderCell("Ende"));
+        board.addRow(createHeaderCell("Tag"),createHeaderCell("Stunden"), createHeaderCell("Begin - Ende"), createHeaderCell("ToDo")); // ToDo
     }
     public Div createCell(String text){
         Div div = new Div();

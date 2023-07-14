@@ -1,5 +1,7 @@
 package de.nmauer.data.entity.timeMapping;
 
+import de.nmauer.data.DateType;
+
 import java.sql.Date;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -64,5 +66,15 @@ public class WorkingMonth {
 
     public String getSorting(){
         return year + "" + month;
+    }
+
+    public int getVacationDayAmount(){
+        int amount = 0;
+        for(WorkingHour workingHour: workingHours){
+            if(workingHour.getDateType().equals(DateType.VACATION)){
+                amount++;
+            }
+        }
+        return amount;
     }
 }

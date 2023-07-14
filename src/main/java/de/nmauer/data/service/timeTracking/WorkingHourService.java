@@ -1,5 +1,6 @@
 package de.nmauer.data.service.timeTracking;
 
+import de.nmauer.data.DateType;
 import de.nmauer.data.entity.timeMapping.WorkingHour;
 import de.nmauer.data.entity.timeMapping.WorkingMonth;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,8 @@ public class WorkingHourService {
                         rs.getTimestamp("logout_date"),
                         rs.getInt("day"),
                         rs.getInt("month"),
-                        rs.getInt("year")
+                        rs.getInt("year"),
+                        DateType.getByTitle(rs.getString("day_type"))
                 )
         );
     }
@@ -37,7 +39,8 @@ public class WorkingHourService {
                         rs.getTimestamp("logout_date"),
                         rs.getInt("day"),
                         rs.getInt("month"),
-                        rs.getInt("year")
+                        rs.getInt("year"),
+                        DateType.getByTitle(rs.getString("day_type"))
                 )
         );
     }
@@ -51,7 +54,8 @@ public class WorkingHourService {
                         rs.getTimestamp("logout_date"),
                         rs.getInt("day"),
                         rs.getInt("month"),
-                        rs.getInt("year")
+                        rs.getInt("year"),
+                        DateType.getByTitle(rs.getString("day_type"))
                 )
         );
     }
@@ -81,7 +85,8 @@ public class WorkingHourService {
                         rs.getTimestamp("logout_date"),
                         rs.getInt("day"),
                         rs.getInt("month"),
-                        rs.getInt("year")
+                        rs.getInt("year"),
+                        DateType.getByTitle(rs.getString("day_type"))
                 )
         );
     }
@@ -95,22 +100,28 @@ public class WorkingHourService {
                         rs.getTimestamp("logout_date"),
                         rs.getInt("day"),
                         rs.getInt("month"),
-                        rs.getInt("year")
+                        rs.getInt("year"),
+                        DateType.getByTitle(rs.getString("day_type"))
                 )
         );
     }
 
     public void update(WorkingHour workingHour){
-        jdbcTemplate.update(String.format("UPDATE working_hours SET year='%s', month='%s', day='%s', login_date='%s', logout_date='%s' WHERE id='%s'",
-                workingHour.getYear(), workingHour.getMonth(), workingHour.getDay(), workingHour.getLoginDate(), workingHour.getLogoutDate(), workingHour.getId()));
+        jdbcTemplate.update(String.format("UPDATE working_hours SET year='%s', month='%s', day='%s', login_date='%s', logout_date='%s', day_type='%s' WHERE id='%s'",
+                workingHour.getYear(), workingHour.getMonth(), workingHour.getDay(), workingHour.getLoginDate(), workingHour.getLogoutDate(), workingHour.getDateType(), workingHour.getId()));
     }
 
     public void addWorkingHour(WorkingHour workingHour){
-        jdbcTemplate.update(String.format("INSERT INTO working_hours (user_id, login_date, logout_date, day, month, year) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')",
-                workingHour.getUser_id(), workingHour.getLoginDate(), workingHour.getLogoutDate(), workingHour.getDay(), workingHour.getMonth(), workingHour.getYear()));
+        jdbcTemplate.update(String.format("INSERT INTO working_hours (user_id, login_date, logout_date, day, month, year, day_type) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s')",
+                workingHour.getUser_id(), workingHour.getLoginDate(), workingHour.getLogoutDate(), workingHour.getDay(), workingHour.getMonth(), workingHour.getYear(), workingHour.getDateType()));
     }
     public void deleteWorkingHour(WorkingHour workingHour){
         jdbcTemplate.update(String.format("DELETE FROM working_hours WHERE id='%s'", workingHour.getId()));
+    }
+
+    public int getUsedVacationDayAmountByUser(int userId){
+        return jdbcTemplate.query(String.format("SELECT COUNT(*) FROM working_hours WHERE day_type='%s'", DateType.VACATION),
+                (rs, rowNum) -> rs.getInt("COUNT(*)")).get(0);
     }
 
 }

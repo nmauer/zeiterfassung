@@ -1,7 +1,10 @@
 package de.nmauer.data.entity.timeMapping;
 
+import de.nmauer.data.DateType;
+
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -13,11 +16,11 @@ public class WorkingHour {
     private long user_id;
 
     private Timestamp loginDate, logoutDate;
-
+    private DateType dateType;
     private int day, month, year;
     private HashMap<Integer, String> monthNames;
 
-    public WorkingHour(int id, long user_id, Timestamp loginDate, Timestamp logoutDate, int day, int month, int year) {
+    public WorkingHour(int id, long user_id, Timestamp loginDate, Timestamp logoutDate, int day, int month, int year, DateType dateType) {
         this.id = id;
         this.user_id = user_id;
         this.loginDate = loginDate;
@@ -25,6 +28,7 @@ public class WorkingHour {
         this.day = day;
         this.month = month;
         this.year = year;
+        this.dateType = dateType;
 
 
         this.monthNames = new HashMap<>();
@@ -41,7 +45,20 @@ public class WorkingHour {
         monthNames.put(11, "November");
         monthNames.put(12, "Dezember");
     }
-    public WorkingHour(long user_id, Timestamp loginDate, Timestamp logoutDate, int day, int month, int year) {
+
+    public DateType getDateType() {
+        return dateType;
+    }
+    public String getDateTypeName() {
+        return dateType.getTitle();
+    }
+
+
+    public void setDateType(DateType dateType) {
+        this.dateType = dateType;
+    }
+
+    public WorkingHour(long user_id, Timestamp loginDate, Timestamp logoutDate, int day, int month, int year, DateType dateType) {
         this.id = -1;
         this.user_id = user_id;
         this.loginDate = loginDate;
@@ -49,6 +66,7 @@ public class WorkingHour {
         this.day = day;
         this.month = month;
         this.year = year;
+        this.dateType = dateType;
 
         this.monthNames = new HashMap<>();
         monthNames.put(1, "Januar");
@@ -123,18 +141,45 @@ public class WorkingHour {
     public void setYear(int year) {
         this.year = year;
     }
+
     public String getDate(){
-        return day + "." + month + "." + year;
+        String date = "";
+        if(day <= 9){
+            date += "0" + day;
+        }else{
+            date += day;
+        }
+        date +=".";
+        if(month <= 9){
+            date += "0" + month;
+        }else{
+            date += month;
+        }
+        date +=  "."+ getYear();
+        return date;
     }
+
     public String getMonthName(){
         return monthNames.get(month);
     }
+
     public void setLogoutDate(Timestamp logoutDate) {
         this.logoutDate = logoutDate;
     }
 
     public String getPauseTime(){
-        return getWorkingTime()>6 ? "": "30m";
+        return getWorkingTime()<6 ? "0m": "30m";
+    }
+
+    public String getBeginFormatted(){
+        return new SimpleDateFormat("HH:mm").format(new Date(loginDate.getTime())) + " Uhr";
+    }
+
+    public String getEndFormatted(){
+        return new SimpleDateFormat("HH:mm").format(new Date(logoutDate.getTime())) + " Uhr";
+    }
+    public String getWorkingTimeFormatted(){
+        return getWorkingTime() + "h";
     }
 
 
