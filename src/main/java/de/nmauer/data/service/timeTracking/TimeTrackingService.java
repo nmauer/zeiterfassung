@@ -1,5 +1,6 @@
 package de.nmauer.data.service.timeTracking;
 
+import de.nmauer.data.DateType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -33,8 +34,8 @@ public class TimeTrackingService {
         Timestamp loginTime = getLogInTime(id);
         Timestamp logoutTime = new Timestamp(System.currentTimeMillis());
 
-        jdbcTemplate.update(String.format("INSERT INTO working_hours (user_id, login_date, logout_date, day, month, year) VALUES" +
-                " ('%s', '%s', '%s', '%s','%s','%s')", id, loginTime, logoutTime, loginTime.toLocalDateTime().getDayOfMonth(), loginTime.getMonth()+ 1, loginTime.getYear()+1900));
+        jdbcTemplate.update(String.format("INSERT INTO working_hours (user_id, login_date, logout_date, day, month, year, day_type) VALUES" +
+                " ('%s', '%s', '%s', '%s','%s','%s','%s')", id, loginTime, logoutTime, loginTime.toLocalDateTime().getDayOfMonth(), loginTime.getMonth()+ 1, loginTime.getYear()+1900, DateType.WORKING_DAY));
 
         jdbcTemplate.update(String.format("DELETE FROM user_login WHERE user_id='%s'", id));
     }

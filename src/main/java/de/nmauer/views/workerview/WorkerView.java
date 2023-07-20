@@ -1,6 +1,5 @@
 package de.nmauer.views.workerview;
 
-import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -12,7 +11,6 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.SortDirection;
-import com.vaadin.flow.data.provider.SortOrder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasDynamicTitle;
@@ -23,6 +21,7 @@ import de.nmauer.data.entity.timeMapping.WorkingHour;
 import de.nmauer.data.entity.timeMapping.WorkingMonth;
 import de.nmauer.data.service.WorkerService;
 import de.nmauer.data.service.timeTracking.WorkingHourService;
+import de.nmauer.utils.Exporter;
 import jakarta.annotation.security.RolesAllowed;
 import software.xdev.vaadin.grid_exporter.GridExporter;
 import software.xdev.vaadin.grid_exporter.format.Format;
@@ -124,7 +123,8 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
             });
             Button exportCSVBtn = new Button("Exportieren");
             exportCSVBtn.addClickListener(event -> {
-                export(monthGrid, workingMonth);
+//                export(monthGrid, workingMonth);
+                new Exporter(workingHourService).export(worker.getId(), workingMonth.getMonth(), workingMonth.getYear());
             });
 
             btnLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
