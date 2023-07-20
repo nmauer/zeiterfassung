@@ -1,16 +1,16 @@
 package de.nmauer.utils;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.server.StreamResource;
 import de.nmauer.data.entity.timeMapping.WorkingHour;
 import de.nmauer.data.service.timeTracking.WorkingHourService;
 import net.sf.jasperreports.engine.export.ooxml.XlsxWorkbookHelper;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 
 public class Exporter {
@@ -102,11 +102,26 @@ public class Exporter {
             FileOutputStream outputStream = new FileOutputStream(fileLocation);
             workbook.write(outputStream);
             workbook.close();
+
+            File file = new File(fileLocation);
+            StreamResource streamResource = new StreamResource(file.getName(), () -> getStream(file));
+            Anchor anchor = new Anchor(streamResource, "Export");
+            anchor.getElement().setAttribute("download", true);
+            UI.getCurrent().getPage().executeJs("$0.click()", anchor.getElement());
         } catch (IOException e) {
             Notification.show("Es ist ein Fehler aufgetreten. Bitte kontaktieren Sie einen Administrator");
             e.printStackTrace();
         }
 
+    }
+    private InputStream getStream(File file) {
+        FileInputStream stream = null;
+        try {
+            stream = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return stream;
     }
 
 }
