@@ -1,7 +1,9 @@
 package de.nmauer.views.workerview;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -16,6 +18,7 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamResource;
 import de.nmauer.data.entity.Worker;
 import de.nmauer.data.entity.timeMapping.WorkingHour;
 import de.nmauer.data.entity.timeMapping.WorkingMonth;
@@ -29,6 +32,10 @@ import software.xdev.vaadin.grid_exporter.jasper.format.CsvFormat;
 import software.xdev.vaadin.grid_exporter.jasper.format.PdfFormat;
 import software.xdev.vaadin.grid_exporter.jasper.format.XlsxFormat;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -123,8 +130,35 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
             });
             Button exportCSVBtn = new Button("Exportieren");
             exportCSVBtn.addClickListener(event -> {
+                File currDirFile = new File(".");
+                String path = currDirFile.getAbsolutePath();
+                String fileLocation = path.substring(0, path.length() -1) + "export.xlsx";
 //                export(monthGrid, workingMonth);
                 new Exporter(workingHourService).export(worker.getId(), workingMonth.getMonth(), workingMonth.getYear());
+
+                Dialog dialog = new Dialog();
+                NativeLabel label = new NativeLabel("Der Download startet Automatisch.");
+                NativeLabel label2 = new NativeLabel("Falls nicht, ");
+                NativeLabel label3 = new NativeLabel(" klicken!");
+
+                VerticalLayout layout = new VerticalLayout();
+
+                dialog.setHeaderTitle("Exportieren");
+                dialog.getFooter().add(new Button("Schließen", event1 -> dialog.close()));
+
+                File file = new File(fileLocation);
+                StreamResource streamResource = new StreamResource(file.getName(), () -> getStream(file));
+                Anchor anchor = new Anchor(streamResource, "hier");
+                anchor.getElement().setAttribute("download", true);
+                UI.getCurrent().getPage().executeJs("$0.click()", anchor.getElement());
+                anchor.setVisible(true);
+                HorizontalLayout hLayout = new HorizontalLayout();
+                hLayout.add(label2, anchor, label3);
+                hLayout.setSpacing(false);
+                layout.add(label, hLayout);
+                anchor.addClassName("download-anchor-style");
+                dialog.add(layout);
+                dialog.open();
             });
 
             btnLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
@@ -197,6 +231,15 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
 
         exporter.withAvailableFormats(formatList);
         exporter.open();
+    }
+    private InputStream getStream(File file) {
+        FileInputStream stream = null;
+        try {
+            stream = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return stream;
     }
 
 }

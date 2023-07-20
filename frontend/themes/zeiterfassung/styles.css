@@ -8,3 +8,6 @@ html {
       --lumo-border-radius-l: var(--lumo-size-m);
 
     }
+.download-anchor-style{
+    margin: 0 5px 0 5px;
+}

@@ -102,26 +102,12 @@ public class Exporter {
             FileOutputStream outputStream = new FileOutputStream(fileLocation);
             workbook.write(outputStream);
             workbook.close();
-
-            File file = new File(fileLocation);
-            StreamResource streamResource = new StreamResource(file.getName(), () -> getStream(file));
-            Anchor anchor = new Anchor(streamResource, "Export");
-            anchor.getElement().setAttribute("download", true);
-            UI.getCurrent().getPage().executeJs("$0.click()", anchor.getElement());
         } catch (IOException e) {
             Notification.show("Es ist ein Fehler aufgetreten. Bitte kontaktieren Sie einen Administrator");
             e.printStackTrace();
         }
 
     }
-    private InputStream getStream(File file) {
-        FileInputStream stream = null;
-        try {
-            stream = new FileInputStream(file);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return stream;
-    }
+
 
 }
