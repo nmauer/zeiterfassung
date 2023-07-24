@@ -9,6 +9,7 @@ import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -26,19 +27,20 @@ import de.nmauer.data.service.WorkerService;
 import de.nmauer.data.service.timeTracking.WorkingHourService;
 import de.nmauer.utils.Exporter;
 import jakarta.annotation.security.RolesAllowed;
+import jxl.biff.ByteArray;
 import software.xdev.vaadin.grid_exporter.GridExporter;
 import software.xdev.vaadin.grid_exporter.format.Format;
 import software.xdev.vaadin.grid_exporter.jasper.format.CsvFormat;
 import software.xdev.vaadin.grid_exporter.jasper.format.PdfFormat;
 import software.xdev.vaadin.grid_exporter.jasper.format.XlsxFormat;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.stream.Stream;
 import java.util.List;
 
@@ -103,22 +105,11 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
             span.setText(workingHour.getMonthName() + " " + workingHour.getYear());
         });
     }
-    private Grid.Column<WorkingHour> date;
-    private Grid.Column<WorkingHour> start;
-    private Grid.Column<WorkingHour> end;
-    private Grid.Column<WorkingHour> workingTime;
-    private Grid.Column<WorkingHour> pauseTime;
-    private Grid.Column<WorkingHour> workingType;
 
     public ComponentRenderer<Div, WorkingMonth> createButtonRenderer(){
         return new ComponentRenderer<>(Div::new, (div, workingMonth)->{
             Grid<WorkingHour> monthGrid = new Grid<>();
-            date = monthGrid.addColumn(WorkingHour::getDate).setHeader("Datum");
-            start = monthGrid.addColumn(WorkingHour::getBeginFormatted).setHeader("Begin");
-            end = monthGrid.addColumn(WorkingHour::getEndFormatted).setHeader("Ende");
-            workingTime = monthGrid.addColumn(WorkingHour::getWorkingTimeFormatted).setHeader("Stunden");
-            pauseTime = monthGrid.addColumn(WorkingHour::getPauseTime).setHeader("Pausenzeit");
-            workingType = monthGrid.addColumn(WorkingHour::getDateType).setHeader("ToDo"); // ToDo
+            Grid.Column<WorkingHour> date = monthGrid.addColumn(WorkingHour::getDate).setHeader("Datum");
             GridSortOrder<WorkingHour> order = new GridSortOrder<>(date, SortDirection.ASCENDING);
             monthGrid.sort(Arrays.asList(order));
             GridListDataView<WorkingHour> monthDataView = monthGrid.setItems(workingHourService.getWorkingHourByUserId(worker.getId(), workingMonth.getMonth(), workingMonth.getYear()));
@@ -133,8 +124,8 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
                 File currDirFile = new File(".");
                 String path = currDirFile.getAbsolutePath();
                 String fileLocation = path.substring(0, path.length() -1) + "export.xlsx";
-//                export(monthGrid, workingMonth);
-                new Exporter(workingHourService).export(worker.getId(), workingMonth.getMonth(), workingMonth.getYear());
+
+                ByteArrayOutputStream outputStream = new Exporter(workingHourService).export(worker.getId(), workingMonth.getMonth(), workingMonth.getYear());
 
                 Dialog dialog = new Dialog();
                 NativeLabel label = new NativeLabel("Der Download startet Automatisch.");
@@ -147,11 +138,11 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
                 dialog.getFooter().add(new Button("Schließen", event1 -> dialog.close()));
 
                 File file = new File(fileLocation);
-                StreamResource streamResource = new StreamResource(file.getName(), () -> getStream(file));
-                Anchor anchor = new Anchor(streamResource, "hier");
+
+                Anchor anchor = new Anchor(getStreamResourceByStream(convertByteArrayOutputStreamToByteArrayInputStream(outputStream), "export-" + workingMonth.getMonthName() + "-" + worker.getName().replace(" ", "_") + ".xlsx"), "hier");
                 anchor.getElement().setAttribute("download", true);
-                UI.getCurrent().getPage().executeJs("$0.click()", anchor.getElement());
-                anchor.setVisible(true);
+
+                runDownload(anchor);
                 HorizontalLayout hLayout = new HorizontalLayout();
                 hLayout.add(label2, anchor, label3);
                 hLayout.setSpacing(false);
@@ -165,18 +156,6 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
             btnLayout.add(showDetailsBtn, exportCSVBtn);
 
             div.add(btnLayout);
-        });
-    }
-
-    public ComponentRenderer<Span, WorkingHour> createLoginTimeRender() {
-        return new ComponentRenderer<>(Span::new, (span, workingHour) -> {
-            span.setText(new SimpleDateFormat("HH:mm").format(workingHour.getLoginDate()));
-        });
-    }
-
-    public ComponentRenderer<Span, WorkingHour> createLogoutTimeRender() {
-        return new ComponentRenderer<>(Span::new, (span, workingHour) -> {
-            span.setText(new SimpleDateFormat("HH:mm").format(workingHour.getLogoutDate()));
         });
     }
 
@@ -217,29 +196,40 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
         return div;
     }
 
-    public void export(Grid<WorkingHour> monthGrid, WorkingMonth workingMonth){
-        List<Format> formatList = new ArrayList<>();
-        CsvFormat csvFormat = new CsvFormat();
-        PdfFormat pdfFormat = new PdfFormat();
-        XlsxFormat xlsxFormat =  new XlsxFormat();
-//        formatList.add(csvFormat);
-        formatList.add(pdfFormat);
-        formatList.add(xlsxFormat);
-
-        GridExporter<WorkingHour> exporter = GridExporter.newWithDefaults(monthGrid);
-        exporter.withFileName("Stundenliste-"+ workingMonth.getMonthName()+ "-"+ worker.getName().replace(" ", "_"));
-
-        exporter.withAvailableFormats(formatList);
-        exporter.open();
+    public void runDownload(Anchor anchor){
+        UI.getCurrent().getPage().executeJs("$0.click()", anchor.getElement());
     }
-    private InputStream getStream(File file) {
-        FileInputStream stream = null;
-        try {
-            stream = new FileInputStream(file);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+
+    private StreamResource getStreamResource(File file) {
+        StreamResource res = new StreamResource(file.getName(), ()->{
+            try {
+                return new ByteArrayInputStream(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
+            } catch (IOException e) {
+                Notification.show("ERROR: Ein Fehler ist aufgetreten");
+                e.printStackTrace();
+                return new ByteArrayInputStream(new byte[0]);
+            }
+        });
+
+        res.setContentType("application/octet-stream");
+
+        return res;
+    }
+
+    public StreamResource getStreamResourceByStream(ByteArrayInputStream stream, String filename) {
+        StreamResource res = new StreamResource(filename, ()-> stream);
+
+        res.setContentType("application/octet-stream");
+
+        return res;
+    }
+
+    private ByteArrayInputStream convertByteArrayOutputStreamToByteArrayInputStream(ByteArrayOutputStream out) {
+        try (ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray())) {
+            return in;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        return stream;
     }
 
 }

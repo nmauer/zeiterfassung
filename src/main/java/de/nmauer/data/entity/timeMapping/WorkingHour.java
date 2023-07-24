@@ -176,11 +176,14 @@ public class WorkingHour {
     }
 
     public String getEndFormatted(){
-        return new SimpleDateFormat("HH:mm").format(new Date(logoutDate.getTime())) + " Uhr";
+        long time = logoutDate.getTime();
+//        if(getWorkingTime() > 6){
+//            time += 1800000;
+//        }
+        return new SimpleDateFormat("HH:mm").format(new Date(time)) + " Uhr";
     }
     public String getWorkingTimeFormatted(){
         return getWorkingTime() + "h";
     }
-
 
 }

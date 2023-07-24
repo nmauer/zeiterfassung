@@ -6,6 +6,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.server.StreamResource;
 import de.nmauer.data.entity.timeMapping.WorkingHour;
 import de.nmauer.data.service.timeTracking.WorkingHourService;
+import jxl.biff.ByteArray;
 import net.sf.jasperreports.engine.export.ooxml.XlsxWorkbookHelper;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -21,7 +22,7 @@ public class Exporter {
         this.workingHourService = workingHourService;
     }
 
-    public void export(int user_id, int month, int year){
+    public ByteArrayOutputStream export(int user_id, int month, int year){
         List<WorkingHour> workingHours = workingHourService.getWorkingHourByUserId(user_id, month, year);
 
 
@@ -94,19 +95,25 @@ public class Exporter {
             i++;
         }
 
-        File currDirFile = new File(".");
-        String path = currDirFile.getAbsolutePath();
-        String fileLocation = path.substring(0, path.length() -1) + "export.xlsx";
+//        File currDirFile = new File(".");
+//        String path = currDirFile.getAbsolutePath();
+//        String fileLocation = path.substring(0, path.length() -1) + "export.xlsx";
 
         try {
-            FileOutputStream outputStream = new FileOutputStream(fileLocation);
+//            FileOutputStream outputStream = new FileOutputStream(fileLocation);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
             workbook.close();
+
+            return outputStream;
+
+//            outputStream.close();
         } catch (IOException e) {
             Notification.show("Es ist ein Fehler aufgetreten. Bitte kontaktieren Sie einen Administrator");
             e.printStackTrace();
         }
 
+        return new ByteArrayOutputStream(0);
     }
 
 
