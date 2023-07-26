@@ -197,7 +197,10 @@ public class WorkerView extends VerticalLayout implements HasDynamicTitle, HasUr
     }
 
     public void runDownload(Anchor anchor){
-        UI.getCurrent().getPage().executeJs("$0.click()", anchor.getElement());
+//        for(int i = 0; i < 10000; i++){
+//            continue;
+//        }
+//        UI.getCurrent().getPage().executeJs("$0.click()", anchor.getElement());
     }
 
     private StreamResource getStreamResource(File file) {
